@@ -1,0 +1,208 @@
+from model.PSRmodel import CompressedPSR
+from bin.TrainingData import TrainingData
+from bin.Agent import Agent
+from bin import Parameter
+from multiprocessing import Pool, Manager, Lock
+from bin.Util import ConvertToTrainSet
+import os
+import numpy as np
+from bin.MultiProcessSimulation import init
+
+def WriteEvalUateDataForPacMan(EvalData, epoch):
+    if not os.path.exists("observations" + "\\Epoch " + str(epoch)):
+        os.makedirs("observations" + "\\Epoch " + str(epoch))
+    with open(file="observations" + "\\Epoch " + str(epoch) + "\\summary", mode='w') as f:
+        TotalRewards = []
+        lenActions = []
+        count_wins = 0
+        for Episode in EvalData:
+            EpisodeRewards = 0
+            EpisodeLength = 0
+            for ActOb in Episode:
+                a = ActOb[0]
+                if a == -1:
+                    break
+                r = ActOb[2]
+                EpisodeRewards = EpisodeRewards + r
+                EpisodeLength = EpisodeLength + 1
+                if r >= 100:
+                    count_wins = count_wins + 1
+            lenActions.append(EpisodeLength)
+            TotalRewards.append(EpisodeRewards)
+        averageValue = np.mean(a=TotalRewards, axis=0)
+        variance = np.var(TotalRewards)
+        std = np.std(TotalRewards)
+        # how many actions the agent takes before making final decision
+        f.write("Average Value For Each Episode: " + str(averageValue) + '\n')
+        f.write("The Variance of EpisodeReward: " + str(variance) + '\n')
+        f.write("The Standard Variance of EpisodeReward: " + str(std) + '\n')
+        f.write("The average length of a game is: " + str(np.mean(a=lenActions, axis=-1)) + "\n")
+        if count_wins != 0:
+            f.write("The wining Probability:" + str(len(TotalRewards) / count_wins))
+        else:
+            f.write("The wining Probability:" + str(-1))
+
+
+def WriteEvalUateData(EvalData, Env, epoch):
+    if not os.path.exists("observations" + "\\Epoch " + str(epoch)):
+        os.makedirs("observations" + "\\Epoch " + str(epoch))
+    with open(file="observations" + "\\Epoch " + str(epoch) + "\\summary", mode='w') as f:
+        with open(file="observations" + "\\Epoch " + str(epoch) + "\\trajectory", mode='w') as f1:
+            TotalRewards = []
+            winTimes = 0
+            failTime = 0
+            lenActions = []
+            for Episode in EvalData:
+                EpisodeRewards = 0
+                winTimesEpisode = 0
+                failTimesEpisode = 0
+                for ActOb in Episode:
+                    if ActOb[0] == -1:
+                        continue
+                    a = Env.Actions[ActOb[0]]
+                    o = Env.Observations[ActOb[1]]
+                    r = Env.Rewards[ActOb[2]]
+                    EpisodeRewards = EpisodeRewards + r
+                    f1.write(a + " " + o + " " + str(r) + ",")
+                    if Env.getGameName() == "Tiger95":
+                        if r == 10:
+                            winTimesEpisode = winTimesEpisode + 1
+                        elif r == -100:
+                            failTimesEpisode = failTimesEpisode + 1
+                        else:
+                            if r != -1:
+                                Exception("reward" + str(r) + "are not seen")
+                    elif Env.getGameName() == "Maze":
+                        if r == 10.0:
+                            winTimesEpisode = winTimesEpisode + 1
+                        elif r == -100.0:
+                            failTimesEpisode = failTimesEpisode + 1
+                    elif Env.getGameName() == "StandTiger":
+                        if r == 30:
+                            winTimesEpisode = winTimesEpisode + 1
+                        elif r == -100:
+                            failTimesEpisode = failTimesEpisode + 1
+                winTimes = winTimes + winTimesEpisode
+                failTime = failTime + failTimesEpisode
+                if winTimesEpisode + failTimesEpisode != 0:
+                    lenActions.append(Parameter.LengthOfAction / (winTimesEpisode + failTimesEpisode))
+                TotalRewards.append(EpisodeRewards)
+                f1.write('\n')
+            averageValue = np.mean(a=TotalRewards, axis=0)
+            variance = np.var(TotalRewards)
+            std = np.std(TotalRewards)
+            if (winTimes + failTime) != 0:
+                winProb = winTimes / (winTimes + failTime)
+            else:
+                winProb = 0
+            # how many actions the agent takes before making final decision
+            f.write("Average Value For Each Episode: " + str(averageValue) + '\n')
+            f.write("The Variance of EpisodeReward: " + str(variance) + '\n')
+            f.write("The Standard Variance of EpisodeReward: " + str(std) + '\n')
+            f.write("The Winning Probability of the agent: " + str(winProb) + '\n')
+            if len(lenActions) == 0:
+                w = -1
+            else:
+                w = np.mean(a=lenActions, axis=-1)
+            f.write("The steps of actions the agent takes before making final decision: " + str(w) + '\n')
+
+
+def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
+    trainData.newDataBatch()
+    TrainingData.LoadData(TrainData=trainData, file="./observations/RandomSampling.txt", rewardDict=rewardDict)
+    for i in range(epoch):
+        trainData.newDataBatch()
+        TrainingData.LoadData(TrainData=trainData, file="epilsonGreedySampling" + str(i) + ".txt",
+                              rewardDict=rewardDict)
+    # psrModel.loadModel(epoch=3)
+
+
+import sys
+from environment.PacMan import PacMan
+import time
+from bin.Util import ConvertLastBatchToTrainSet, readMemoryfromdisk, copyRewardDict
+
+vars = sys.float_info.min
+if __name__ == "__main__":
+    manager = Manager()
+    rewardDict = manager.dict()
+    ns = manager.Namespace()
+    ns.rewardCount = 0
+    trainIterations = 1000
+    file = "train/setting/PacMan.json"
+    Parameter.readfile(file=file)
+    RandomSamplingForPSR = True
+    isbuiltPSR = True
+    game = PacMan()
+    game.calulateMaxTestID()
+    Parameter.maxTestID = game.maxTestID
+    # env = gym.make("MsPacman-ram-v0")
+    trainData = TrainingData()
+    iterNo = 0
+    agent = Agent(PnumActions=game.getNumActions(), epsilon=Parameter.epsilon,
+                  inputDim=(Parameter.svdDim,), algorithm=Parameter.algorithm, Parrallel=True)
+    if Parameter.algorithm == "fitted_Q":
+        print("learning algorithm is fitted Q learning")
+    elif Parameter.algorithm == "DRL":
+        print("learning algorithm is distributional Q-learning")
+
+    rdict = readMemoryfromdisk(file="./rewardDict.txt")
+    copyRewardDict(rewardDict=rewardDict, rewardDict1=rdict)
+    psrModel = CompressedPSR(game.getGameName())
+    psrPool = Pool(Parameter.ThreadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
+    print("Finishing Preparation!")
+    loadCheckPoint(trainData=trainData, epoch=iterNo, psrModel=psrModel, rewardDict=rewardDict)
+    trainData = trainData.MergeAllBatchData()
+    trainSet = None
+    while iterNo < trainIterations:
+        print("Starting Iteration: " + str(iterNo + 1))
+        if RandomSamplingForPSR:
+            trainData.newDataBatch()
+
+            #edit
+            game.SimulateTrainData(runs=Parameter.runsForCPSR, isRandom=True, psrModel=psrModel,
+                                   trainData=trainData, epoch=iterNo - 1, pool=psrPool,
+                                   RunOnVirtualEnvironment=False, name=game.getGameName(), rewardDict=rewardDict,
+                                   ns=ns)
+
+            psrModel.validActObset = trainData.validActOb
+            WriteEvalUateDataForPacMan(EvalData=trainData.data[trainData.getBatch()], epoch=-1)
+            trainData.WriteData(file="observations" + "\\RandomSampling" + str(iterNo) + ".txt")
+            RandomSamplingForPSR = False
+        if isbuiltPSR:
+            psrModel.build(data=trainData, aos=trainData.validActOb, pool=psrPool, rewardDict=rewardDict)
+        psrModel.saveModel(epoch=iterNo)
+        from bin.Util import writerMemoryintodisk
+        writerMemoryintodisk(file="../rewardDict.txt", data=rewardDict.copy())
+        print("Convert sampling data into training forms")
+        if trainSet is None:
+            trainSet = ConvertToTrainSet(data=trainData, RewardDict=rewardDict,
+                                         pool=psrPool, epoch=iterNo, name=game.getGameName(), psrModel=psrModel)
+        else:
+            trainSet = trainSet + ConvertLastBatchToTrainSet(data=trainData, RewardDict=rewardDict,
+                                                             pool=psrPool, epoch=iterNo, name=game.getGameName(),
+                                                             psrModel=psrModel)
+        print("Starting training")
+        tick1 = time.time()
+        print("Iteration: %d/%d"%(iterNo+1, trainIterations))
+        agent.Train_And_Update(data=trainSet, epoch=iterNo, pool=psrPool)
+        tick2 = time.time()
+        print("The time spent on training:" + str(tick2 - tick1))
+        agent.SaveWeight(epoch=iterNo)
+        print("Evaluating the agent")
+        tick3 = time.time()
+        EvalData = game.SimulateTestingRun(runs=Parameter.TestingRuns, epoch=iterNo, pool=psrPool,  #edit
+                                           psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns) #edit
+        tick4 = time.time()
+        print("The time spent on Evaluate:" + str(tick4 - tick3))
+        trainData.newDataBatch()
+
+        #edit
+        game.SimulateTrainData(runs=Parameter.runsForLearning, psrModel=psrModel, trainData=trainData,
+                               isRandom=False, epoch=iterNo, pool=psrPool,
+                               RunOnVirtualEnvironment=Parameter.TrainingOnVirtualEnvironment,
+                               name=game.getGameName(), rewardDict=rewardDict, ns=ns)
+
+        trainData.WriteData(file="observations" + "\\epsilonGreedySampling" + str(iterNo) + ".txt")
+        WriteEvalUateDataForPacMan(EvalData=EvalData, epoch=iterNo)
+        iterNo = iterNo + 1
