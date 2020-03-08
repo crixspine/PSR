@@ -139,7 +139,7 @@ class StandTiger(Simulator):
         p1s = OMats[self.Tiger]
         self.observations = choice(a=list(StandTiger.ObservationsID), p=list(p1s), size=1)[0]
         self.actionCount = self.actionCount + 1
-        if self.actionCount >= Parameter.LengthOfAction:
+        if self.actionCount >= Parameter.lengthOfAction:
             self.terminate = True
 
     def isTerminate(self):

@@ -1,14 +1,14 @@
 
-global numAtoms, learningRate, decay, vmin, vmax, gamma, alpha, TrainingOnVirtualEnvironment, \
-    epsilon, algorithm, svdDim, ProjDim, maxTestID, maxTestlen, maxHistLen, introduceReward, RandomInit, \
-    LengthOfAction, runsForLearning, runsForCPSR, TestingRuns, SimulateBatch, ThreadPoolSize, lr_min, maxEpoches
+global numAtoms, learningRate, decay, vmin, vmax, gamma, alpha, trainingOnVirtualEnvironment, \
+    epsilon, algorithm, svdDim, projDim, maxTestID, maxTestlen, maxHistLen, introduceReward, randomInit, \
+    lengthOfAction, runsForLearning, runsForCPSR, testingRuns, SimulateBatch, threadPoolSize, lr_min, maxEpochs
 import json
 def readfile(file):
     with open(file, 'r') as f:
         Params = json.load(f)
-        global numAtoms, learningRate, decay, vmin, vmax, gamma, alpha, TrainingOnVirtualEnvironment,\
-            epsilon, algorithm, svdDim, ProjDim, maxTestID, maxTestlen, maxHistLen, introduceReward, RandomInit,\
-            LengthOfAction, runsForLearning, runsForCPSR, TestingRuns, SimulateBatch, ThreadPoolSize, lr_min, maxEpoches
+        global numAtoms, learningRate, decay, vmin, vmax, gamma, alpha, trainingOnVirtualEnvironment,\
+            epsilon, algorithm, svdDim, projDim, maxTestID, maxTestlen, maxHistLen, introduceReward, randomInit,\
+            lengthOfAction, runsForLearning, runsForCPSR, testingRuns, SimulateBatch, threadPoolSize, lr_min, maxEpochs
         numAtoms = Params["numAtoms"]
         learningRate = Params["learningRate"]
         decay = Params["decay"]
@@ -16,25 +16,25 @@ def readfile(file):
         vmax = float(Params["vmax"])
         gamma = Params["gamma"]
         alpha = Params["alpha"]
-        TrainingOnVirtualEnvironment = Params["TrainingOnVirtualEnvironment"]
+        trainingOnVirtualEnvironment = Params["TrainingOnVirtualEnvironment"]
         epsilon = Params["epsilon"]
         algorithm = Params["algorithm"]
-        maxEpoches = Params["maxEpoch"]
+        maxEpochs = Params["maxEpoch"]
         ########################################################
         # PSR setting
         svdDim = Params["svdDim"]
-        ProjDim = Params["ProjDim"]
+        projDim = Params["ProjDim"]
         maxTestlen = Params["maxTestlen"]
         maxHistLen = Params["maxHistLen"]
         introduceReward = Params["introduceReward"]
         ########################################################
-        RandomInit = Params["RandomInit"]
-        LengthOfAction = Params["LengthOfAction"]
+        randomInit = Params["RandomInit"]
+        lengthOfAction = Params["LengthOfAction"]
         runsForLearning = Params["runsForLearning"]
         runsForCPSR = Params["runsForCPSR"]
-        TestingRuns = Params["TestingRuns"]
+        testingRuns = Params["TestingRuns"]
         maxTestID = Params["maxTestID"]
-        ThreadPoolSize = Params["ThreadPoolSize"]
+        threadPoolSize = Params["ThreadPoolSize"]
         lr_min = Params["minimum_learningRate"]
 
 def writefile(file):
@@ -46,26 +46,26 @@ def writefile(file):
     Params["vmax"] = vmax
     Params["gamma"] = gamma
     Params["alpha"] = alpha
-    Params["TrainingOnVirtualEnvironment"] = TrainingOnVirtualEnvironment
+    Params["TrainingOnVirtualEnvironment"] = trainingOnVirtualEnvironment
     Params["epsilon"] = epsilon
     Params["algorithm"] = algorithm
     ########################################################
     # PSR setting
     Params["svdDim"] = svdDim
-    Params["ProjDim"] = ProjDim
+    Params["ProjDim"] = projDim
     Params["maxTestlen"] = maxTestlen
     Params["maxHistLen"] = maxHistLen
     Params["introduceReward"] = introduceReward
     ########################################################
-    Params["RandomInit"] = RandomInit
-    Params["LengthOfAction"] = LengthOfAction
+    Params["RandomInit"] = randomInit
+    Params["LengthOfAction"] = lengthOfAction
     Params["runsForLearning"] = runsForLearning
     Params["runsForCPSR"] = runsForCPSR
-    Params["TestingRuns"] = TestingRuns
+    Params["TestingRuns"] = testingRuns
     Params["maxTestID"] = maxTestID
-    Params["ThreadPoolSize"] = ThreadPoolSize
+    Params["ThreadPoolSize"] = threadPoolSize
     Params["minimum_learningRate"] = lr_min
-    Params["maxEpoch"] = maxEpoches
+    Params["maxEpoch"] = maxEpochs
     f = open(file=file, mode='w')
     json.dump(Params, f)
     f.close()

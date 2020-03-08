@@ -44,7 +44,7 @@ class CompressedPSR:
         return psrModel
 
     def __init__(self, game):
-        self.e = np.zeros((Parameter.ProjDim + 1, 1))
+        self.e = np.zeros((Parameter.projDim + 1, 1))
         self.e[0, 0] = 1
         self.randomVectorCache = dict()
         self.THMat = None
@@ -86,19 +86,19 @@ class CompressedPSR:
         self.validActObset = aos
         if self.THMat is None and self.HMat is None:
             print("Initialize THMat and HMat!")
-            self.THMat = np.zeros((Parameter.ProjDim, Parameter.ProjDim + 1))
+            self.THMat = np.zeros((Parameter.projDim, Parameter.projDim + 1))
             print("THMat:")
             print(self.THMat)
-            self.HMat = np.zeros((Parameter.ProjDim + 1, 1))
+            self.HMat = np.zeros((Parameter.projDim + 1, 1))
             print("HMat: ")
             print(self.HMat)
 
         for ao in self.validActObset:
             if ao not in self.aoMats.keys():
-                self.aoMats[ao] = np.zeros((Parameter.ProjDim, Parameter.ProjDim + 1))
-        actObsPerThread = int(len(data.data[data.getBatch()]) / Parameter.ThreadPoolSize)
+                self.aoMats[ao] = np.zeros((Parameter.projDim, Parameter.projDim + 1))
+        actObsPerThread = int(len(data.data[data.getBatch()]) / Parameter.threadPoolSize)
         args = []
-        for i in range(Parameter.ThreadPoolSize):
+        for i in range(Parameter.threadPoolSize):
             d = data.data[data.getBatch()][i * actObsPerThread:(i + 1) * actObsPerThread:]
             fileName = "../tmp//dataForThread" + str(i) + ".txt"
             writerDataintoDisk(file=fileName, data=d)

@@ -85,7 +85,7 @@ def WriteEvalUateData(EvalData, Env, epoch):
                 winTimes = winTimes + winTimesEpisode
                 failTime = failTime + failTimesEpisode
                 if winTimesEpisode + failTimesEpisode != 0:
-                    lenActions.append(Parameter.LengthOfAction / (winTimesEpisode + failTimesEpisode))
+                    lenActions.append(Parameter.lengthOfAction / (winTimesEpisode + failTimesEpisode))
                 TotalRewards.append(EpisodeRewards)
                 f1.write('\n')
             averageValue = np.mean(a=TotalRewards, axis=0)
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     rdict = readMemoryfromdisk(file="./rewardDict.txt")
     copyRewardDict(rewardDict=rewardDict, rewardDict1=rdict)
     psrModel = CompressedPSR(game.getGameName())
-    psrPool = Pool(Parameter.ThreadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
+    psrPool = Pool(Parameter.threadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
     print("Finishing Preparation!")
     loadCheckPoint(trainData=trainData, epoch=iterNo, psrModel=psrModel, rewardDict=rewardDict)
     trainData = trainData.MergeAllBatchData()
@@ -191,7 +191,7 @@ if __name__ == "__main__":
         agent.SaveWeight(epoch=iterNo)
         print("Evaluating the agent")
         tick3 = time.time()
-        EvalData = game.SimulateTestingRun(runs=Parameter.TestingRuns, epoch=iterNo, pool=psrPool,  #edit
+        EvalData = game.SimulateTestingRun(runs=Parameter.testingRuns, epoch=iterNo, pool=psrPool,  #edit
                                            psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns) #edit
         tick4 = time.time()
         print("The time spent on Evaluate:" + str(tick4 - tick3))
@@ -200,7 +200,7 @@ if __name__ == "__main__":
         #edit
         game.SimulateTrainData(runs=Parameter.runsForLearning, psrModel=psrModel, trainData=trainData,
                                isRandom=False, epoch=iterNo, pool=psrPool,
-                               RunOnVirtualEnvironment=Parameter.TrainingOnVirtualEnvironment,
+                               RunOnVirtualEnvironment=Parameter.trainingOnVirtualEnvironment,
                                name=game.getGameName(), rewardDict=rewardDict, ns=ns)
 
         trainData.WriteData(file="observations" + "\\epsilonGreedySampling" + str(iterNo) + ".txt")

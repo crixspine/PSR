@@ -38,7 +38,7 @@ def SimulateRunsOnCPSR(args):
         pv = psrModel.getCurrentPV()
         count = 0
         dataCollector.newEpisode()
-        while count < Parameter.LengthOfAction:
+        while count < Parameter.lengthOfAction:
             CoreTestPredictions = psrModel.generateCoreTestPrediction(pvs=pv)
             aid = agent.getAction(state=CoreTestPredictions)
             preds = psrModel.PredictsForPV(pv1s=pv)
@@ -332,11 +332,11 @@ def ConstructingTHMats(args):
     THMat = None
     HistMat = None
     if psrType == "CPSR":
-        THMat = np.zeros((Parameter.ProjDim, Parameter.ProjDim + 1))
-        HistMat = np.zeros((Parameter.ProjDim + 1, 1))
+        THMat = np.zeros((Parameter.projDim, Parameter.projDim + 1))
+        HistMat = np.zeros((Parameter.projDim + 1, 1))
         for ao in validActObs:
             if ao not in aoMats.keys():
-                aoMats[ao] = np.zeros((Parameter.ProjDim, Parameter.ProjDim + 1))
+                aoMats[ao] = np.zeros((Parameter.projDim, Parameter.projDim + 1))
     elif psrType == "TPSR":
         THMat = np.zeros((len(tests), len(hists) + 1))
         HistMat = np.zeros((len(hists) + 1, 1))
@@ -448,16 +448,16 @@ def generateRandomVector(ids, ishistory):
         return randomVectorCache[ids]
     else:
         if ids == maxTestID:
-            if Parameter.RandomInit:
-                vector = np.ones((Parameter.ProjDim,))
+            if Parameter.randomInit:
+                vector = np.ones((Parameter.projDim,))
             else:
-                vector = np.zeros((Parameter.ProjDim,))
+                vector = np.zeros((Parameter.projDim,))
             vector = np.concatenate([[1], vector])
         else:
             seed(ids)
-            vector = normal(loc=0, scale=1.0, size=Parameter.ProjDim)
+            vector = normal(loc=0, scale=1.0, size=Parameter.projDim)
             if ishistory:
-                if Parameter.RandomInit:
+                if Parameter.randomInit:
                     vector = np.concatenate([[1], vector])
                 else:
                     vector = np.concatenate([[0], vector])

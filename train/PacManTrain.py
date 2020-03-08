@@ -85,7 +85,7 @@ def WriteEvalUateData(EvalData, Env, epoch):
                 winTimes = winTimes + winTimesEpisode
                 failTime = failTime + failTimesEpisode
                 if winTimesEpisode + failTimesEpisode != 0:
-                    lenActions.append(Parameter.LengthOfAction / (winTimesEpisode + failTimesEpisode))
+                    lenActions.append(Parameter.lengthOfAction / (winTimesEpisode + failTimesEpisode))
                 TotalRewards.append(EpisodeRewards)
                 f1.write('\n')
             averageValue = np.mean(a=TotalRewards, axis=0)
@@ -128,12 +128,18 @@ vars = sys.float_info.min
 def test():
     print("in PSR/train/PacManTrain.py")
 
+# model: CPSR, TPSR (default = CPSR)
+# policy: fitted-Q, DRL
+# encoder: (Default = None)
+# epochs: int
+
+# def train(model, policy, encoder, epochs):
 def train():
     manager = Manager()
     rewardDict = manager.dict()
     ns = manager.Namespace()
     ns.rewardCount = 0
-    trainIterations = 1000
+    trainIterations = epochs
     file = "../train/setting/PacMan.json"
     print("i1")
     Parameter.readfile(file=file)
@@ -155,7 +161,7 @@ def train():
     rdict = readMemoryfromdisk(file="../bin/rewardDict.txt")
     copyRewardDict(rewardDict=rewardDict, rewardDict1=rdict)
     psrModel = CompressedPSR(game.getGameName())
-    psrPool = Pool(Parameter.ThreadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
+    psrPool = Pool(Parameter.threadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
     print("Finishing Preparation!")
     loadCheckPoint(trainData=trainData, epoch=iterNo, psrModel=psrModel, rewardDict=rewardDict)
     trainData = trainData.MergeAllBatchData()
@@ -197,7 +203,7 @@ def train():
         agent.SaveWeight(epoch=iterNo)
         print("Evaluating the agent")
         tick3 = time.time()
-        EvalData = game.SimulateTestingRun(runs=Parameter.TestingRuns, epoch=iterNo, pool=psrPool,  #edit
+        EvalData = game.SimulateTestingRun(runs=Parameter.testingRuns, epoch=iterNo, pool=psrPool,  #edit
                                            psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns) #edit
         tick4 = time.time()
         print("The time spent on Evaluate:" + str(tick4 - tick3))
@@ -206,7 +212,7 @@ def train():
         #edit
         game.SimulateTrainData(runs=Parameter.runsForLearning, psrModel=psrModel, trainData=trainData,
                                isRandom=False, epoch=iterNo, pool=psrPool,
-                               RunOnVirtualEnvironment=Parameter.TrainingOnVirtualEnvironment,
+                               RunOnVirtualEnvironment=Parameter.trainingOnVirtualEnvironment,
                                name=game.getGameName(), rewardDict=rewardDict, ns=ns)
 
         trainData.WriteData(file="../observations" + "\\epsilonGreedySampling" + str(iterNo) + ".txt")

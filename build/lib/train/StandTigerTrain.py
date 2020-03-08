@@ -250,7 +250,7 @@ def WriteEvalUateData(EvalData, Env, epoch):
                 winTimes = winTimes + winTimesEpisode
                 failTime = failTime + failTimesEpisode
                 if winTimesEpisode + failTimesEpisode != 0:
-                    lenActions.append(Parameter.LengthOfAction / (winTimesEpisode + failTimesEpisode))
+                    lenActions.append(Parameter.lengthOfAction / (winTimesEpisode + failTimesEpisode))
                 TotalRewards.append(EpisodeRewards)
                 f1.write('\n')
             averageValue = np.mean(a=TotalRewards, axis=0)
@@ -322,7 +322,7 @@ if __name__ == "__main__":
 
     psrModel = CompressedPSR(game.getGameName())
     # loadCheckPoint(trainData=trainData, rewardDict=rewardDict, psrModel=psrModel, epoch=iterNo)
-    PSRpool = Pool(Parameter.ThreadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
+    PSRpool = Pool(Parameter.threadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
     print("Finishing Preparation!")
     trainSet = None
     while iters < trainIterations:
@@ -366,14 +366,14 @@ if __name__ == "__main__":
         agent.SaveWeight(epoch=iters)
         print("Evaluating the agent")
         tick3 = time.time()
-        EvalData = game.SimulateTestingRun(runs=Parameter.TestingRuns, epoch=iters, pool=PSRpool,
+        EvalData = game.SimulateTestingRun(runs=Parameter.testingRuns, epoch=iters, pool=PSRpool,
                                            psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns)
         tick4 = time.time()
         print("The time spent on Evaluate:" + str(tick4 - tick3))
         trainData.newDataBatch()
         game.SimulateTrainData(runs=Parameter.runsForLearning, psrModel=psrModel, trainData=trainData,
                                isRandom=False, epoch=iters, pool=PSRpool,
-                               RunOnVirtualEnvironment=Parameter.TrainingOnVirtualEnvironment,
+                               RunOnVirtualEnvironment=Parameter.trainingOnVirtualEnvironment,
                                name=game.getGameName(), rewardDict=rewardDict, ns=ns)
         trainData.WriteData(file="epilsonGreedySampling" + str(iters) + ".txt")
         iters = iters + 1

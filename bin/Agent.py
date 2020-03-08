@@ -224,7 +224,7 @@ class Agent:
         print("training:" + str(6 * (epoch * 0.6 + 1)) + "epoches")
         # env = gym.make("MsPacman-ram-v0")
         # env = wrappers.Monitor(env, './videos/' + str(epoch) + '/')
-        for e in range(min(int(6 * (epoch * 0.6 + 1)), Parameter.maxEpoches)):
+        for e in range(min(int(6 * (epoch * 0.6 + 1)), Parameter.maxEpochs)):
             ExpValue1 = []
             for a in self.Actions:
                 act = np.ones(shape=(len(EndStateSet), 1)) * a
@@ -335,7 +335,7 @@ class Agent:
             initialValue = np.repeat(a=self.initialValue, repeats=len(trainX0), axis=0)
             self.ParallelTrain(trainX=trainX0, labelY=initialValue, pool=pool)
         print("training:" + str(6 * (epoch * 0.6 + 1)) + "epoches")
-        for e in range(min(int(6 * (epoch * 0.6 + 1)), Parameter.maxEpoches)):
+        for e in range(min(int(6 * (epoch * 0.6 + 1)), Parameter.maxEpochs)):
             ExpValue1 = []
             for a in self.Actions:
                 act = np.ones(shape=(len(EndStateSet), 1)) * a

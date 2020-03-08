@@ -33,9 +33,9 @@ class TransformedPSR(CompressedPSR):
 
         for ao in self.validActObset:
             self.aoMats[ao] = np.zeros((testSize, histSize))
-        actObsPerThread = int(len(data.data[data.getBatch()]) / Parameter.ThreadPoolSize)
+        actObsPerThread = int(len(data.data[data.getBatch()]) / Parameter.threadPoolSize)
         args = []
-        for i in range(Parameter.ThreadPoolSize):
+        for i in range(Parameter.threadPoolSize):
             d = data.data[data.getBatch()][i * actObsPerThread:(i + 1) * actObsPerThread:]
             fileName = "tmp//dataForThread" + str(i) + ".txt"
             writerDataintoDisk(file=fileName, data=d)

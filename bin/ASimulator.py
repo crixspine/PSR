@@ -44,17 +44,17 @@ class Simulator:
         if not RunOnVirtualEnvironment:
             print("Simulating an agent on Real environment!")
             args = []
-            for i in range(Parameter.ThreadPoolSize):
+            for i in range(Parameter.threadPoolSize):
                 args.append(
-                    [self.Clone(), psrModel.ReturnEmptyObject(name=name), int(runs / Parameter.ThreadPoolSize), isRandom,
+                    [self.Clone(), psrModel.ReturnEmptyObject(name=name), int(runs / Parameter.threadPoolSize), isRandom,
                      self.getNumActions(), epoch, randint(low=0, high=1000000000), rewardDict, ns])
             TrainDataList = pool.map(func=SimulateTrainDataMultiProcess, iterable=args)
         else:
             print("Simulating an agent on CPSR environment!")
             args = []
-            for i in range(Parameter.ThreadPoolSize):
+            for i in range(Parameter.threadPoolSize):
                 args.append(
-                    [psrModel.ReturnEmptyObject(name=name), int(runs / Parameter.ThreadPoolSize), self.getNumActions(),
+                    [psrModel.ReturnEmptyObject(name=name), int(runs / Parameter.threadPoolSize), self.getNumActions(),
                      epoch, randint(low=0, high=1000000000), rewardDict, ns])
             TrainDataList = pool.map(func=SimulateRunsOnCPSR, iterable=args)
         for TrainData in TrainDataList:
@@ -71,8 +71,8 @@ class Simulator:
 
     def SimulateTestingRun(self, runs, epoch, pool, psrModel, name, rewardDict, ns):
         args = []
-        for i in range(Parameter.ThreadPoolSize):
-            args.append([int(runs / Parameter.ThreadPoolSize), psrModel.ReturnEmptyObject(name=name), self.getNumActions(),
+        for i in range(Parameter.threadPoolSize):
+            args.append([int(runs / Parameter.threadPoolSize), psrModel.ReturnEmptyObject(name=name), self.getNumActions(),
                          self.Clone(), epoch, randint(low=0, high=1000000000), rewardDict, ns])
         EvalDatas = pool.map(func=EvaluateMultiProcess, iterable=args)
         output = []
