@@ -48,25 +48,33 @@ class Agent:
             if self.Forest is None:
                 Exception("Forest is not built")
             import pickle
-            if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-                os.makedirs("../observations" + "\\Epoch " + str(epoch))
-            with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="wb") as f:
+            # if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
+            #     os.makedirs("../observations" + "\\Epoch " + str(epoch))
+            # with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="wb") as f:
+            if not os.path.exists("PSR/observations" + "\\Epoch " + str(epoch)):
+                os.makedirs("PSR/observations" + "\\Epoch " + str(epoch))
+            with open(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="wb") as f:
                 pickle.dump(self.Forest, f)
         elif self.algorithm == "DRL":
             if self.Forests is None:
                 Exception("Forests is not built")
             import pickle
-            if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-                os.makedirs("../observations" + "\\Epoch " + str(epoch))
+            # if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
+            #     os.makedirs("../observations" + "\\Epoch " + str(epoch))
+            if not os.path.exists("PSR/observations" + "\\Epoch " + str(epoch)):
+                os.makedirs("PSR/observations" + "\\Epoch " + str(epoch))
             for i in range(Parameter.numAtoms):
-                with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="wb") as f:
+                # with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="wb") as f:
+                with open(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="wb") as f:
                     pickle.dump(self.Forests[i], f)
 
     def LoadWeight(self, epoch):
         if self.algorithm == "fitted_Q":
             import pickle
-            if os.path.exists("../observations" + "\\Epoch " + str(epoch) + "\\model.sav"):
-                with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="rb") as f:
+            # if os.path.exists("../observations" + "\\Epoch " + str(epoch) + "\\model.sav"):
+            #     with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="rb") as f:
+            if os.path.exists("PSR/observations" + "\\Epoch " + str(epoch) + "\\model.sav"):
+                with open(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="rb") as f:
                     self.Forest = pickle.load(f)
                     Param = self.Forest.get_params()
                     Param['n_jobs'] = 1
@@ -76,8 +84,10 @@ class Agent:
         elif self.algorithm == "DRL":
             import pickle
             for i in range(Parameter.numAtoms):
-                if os.path.exists("../observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav"):
-                    with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="rb") as f:
+                # if os.path.exists("../observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav"):
+                #     with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="rb") as f:
+                if os.path.exists("PSR/observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav"):
+                    with open(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="rb") as f:
                         self.Forests[i] = pickle.load(f)
                         Param = self.Forests[i].get_params()
                         Param['n_jobs'] = 1
@@ -221,7 +231,7 @@ class Agent:
                 self.genNextState = self.generateNextState()
             initialValue = np.repeat(a=self.initialValue, repeats=len(trainX0), axis=0)
             self.ParallelTrain(trainX=trainX0, labelY=initialValue, pool=pool)
-        print("training:" + str(6 * (epoch * 0.6 + 1)) + "epoches")
+        print("Training:" + str(6 * (epoch * 0.6 + 1)) + "epochs")
         # env = gym.make("MsPacman-ram-v0")
         # env = wrappers.Monitor(env, './videos/' + str(epoch) + '/')
         for e in range(min(int(6 * (epoch * 0.6 + 1)), Parameter.maxEpochs)):

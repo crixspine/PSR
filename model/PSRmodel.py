@@ -5,6 +5,9 @@ from bin.Util import writerMemoryintodisk, readaoMatsFromdisk, readMemoryfromdis
 
 eps = np.finfo(float).eps
 
+#TODO: Delete after testing
+def testonly():
+    print("lol")
 
 class CompressedPSR:
     def TruncatedSVD(self, mats, maxDim):
@@ -59,22 +62,32 @@ class CompressedPSR:
 
     def saveModel(self, epoch):
         import os
-        if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-            os.makedirs("../observations" + "\\Epoch " + str(epoch))
-        writerMemoryintodisk(file="../observations" + "\\Epoch " + str(epoch) + "\\mInf.txt", data=self.mInf.tolist())
-        writerMemoryintodisk(file="../observations" + "\\Epoch " + str(epoch) + "\\pv.txt", data=self.pv.tolist())
+        # if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
+        #     os.makedirs("../observations" + "\\Epoch " + str(epoch))
+        # writerMemoryintodisk(file="../observations" + "\\Epoch " + str(epoch) + "\\mInf.txt", data=self.mInf.tolist())
+        # writerMemoryintodisk(file="../observations" + "\\Epoch " + str(epoch) + "\\pv.txt", data=self.pv.tolist())
+        if not os.path.exists("PSR/observations" + "\\Epoch " + str(epoch)):
+            os.makedirs("PSR/observations" + "\\Epoch " + str(epoch))
+        writerMemoryintodisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\mInf.txt", data=self.mInf.tolist())
+        writerMemoryintodisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\pv.txt", data=self.pv.tolist())
         aoMats = dict()
         for key in self.CaoMats.keys():
             aoMats[key] = self.CaoMats[key].tolist()
-        writerMemoryintodisk(file="../observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt", data=aoMats)
+        # writerMemoryintodisk(file="../observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt", data=aoMats)
+        writerMemoryintodisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt", data=aoMats)
 
     def loadModel(self, epoch):
         import os
-        if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-            os.makedirs("../observations" + "\\Epoch " + str(epoch))
-        self.CaoMats = readaoMatsFromdisk(file="../observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt")
-        self.mInf = np.array(readMemoryfromdisk(file="../observations" + "\\Epoch " + str(epoch) + "\\mInf.txt"))
-        self.pv = np.array(readMemoryfromdisk(file="../observations" + "\\Epoch " + str(epoch) + "\\pv.txt"))
+        # if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
+        #     os.makedirs("../observations" + "\\Epoch " + str(epoch))
+        # self.CaoMats = readaoMatsFromdisk(file="../observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt")
+        # self.mInf = np.array(readMemoryfromdisk(file="../observations" + "\\Epoch " + str(epoch) + "\\mInf.txt"))
+        # self.pv = np.array(readMemoryfromdisk(file="../observations" + "\\Epoch " + str(epoch) + "\\pv.txt"))
+        if not os.path.exists("PSR/observations" + "\\Epoch " + str(epoch)):
+            os.makedirs("PSR/observations" + "\\Epoch " + str(epoch))
+        self.CaoMats = readaoMatsFromdisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt")
+        self.mInf = np.array(readMemoryfromdisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\mInf.txt"))
+        self.pv = np.array(readMemoryfromdisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\pv.txt"))
         self.isbuilt = True
         keys = self.CaoMats.keys()
         self.validActObset = list(keys)
@@ -100,7 +113,8 @@ class CompressedPSR:
         args = []
         for i in range(Parameter.threadPoolSize):
             d = data.data[data.getBatch()][i * actObsPerThread:(i + 1) * actObsPerThread:]
-            fileName = "../tmp//dataForThread" + str(i) + ".txt"
+            # fileName = "../tmp//dataForThread" + str(i) + ".txt"
+            fileName = "PSR/tmp//dataForThread" + str(i) + ".txt"
             writerDataintoDisk(file=fileName, data=d)
             tmpTrainData = data.ReturnEmptyObject()
             args.append([fileName, data.testDict, data.histDict, data.validActOb, "CPSR", i, tmpTrainData, rewardDict])

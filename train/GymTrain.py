@@ -1,14 +1,24 @@
+from autoencoder import VanillaAutoEnc
+from environment import GymEnv
 from model.PSRmodel import CompressedPSR
 from bin.TrainingData import TrainingData
 from bin.Agent import Agent
 from bin import Parameter
 from multiprocessing import Pool, Manager, Lock
-from bin.Util import ConvertToTrainSet
+from bin.Util import ConvertToTrainSet, writerMemoryintodisk
 import os
 import numpy as np
 from bin.MultiProcessSimulation import init
 
-def WriteEvalUateDataForPacMan(EvalData, epoch):
+import environment.GymEnv
+
+# model: CPSR, TPSR (default = CPSR)
+# policy: fitted-Q, DRL
+# encoder: (Default = None)
+# epochs: int
+
+
+def WriteEvalUateDataForGym(EvalData, epoch):
     if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
         os.makedirs("../observations" + "\\Epoch " + str(epoch))
     with open(file="../observations" + "\\Epoch " + str(epoch) + "\\summary", mode='w') as f:
@@ -43,70 +53,6 @@ def WriteEvalUateDataForPacMan(EvalData, epoch):
             f.write("The wining Probability:" + str(-1))
 
 
-def WriteEvalUateData(EvalData, Env, epoch):
-    if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-        os.makedirs("../observations" + "\\Epoch " + str(epoch))
-    with open(file="../observations" + "\\Epoch " + str(epoch) + "\\summary", mode='w') as f:
-        with open(file="../observations" + "\\Epoch " + str(epoch) + "\\trajectory", mode='w') as f1:
-            TotalRewards = []
-            winTimes = 0
-            failTime = 0
-            lenActions = []
-            for Episode in EvalData:
-                EpisodeRewards = 0
-                winTimesEpisode = 0
-                failTimesEpisode = 0
-                for ActOb in Episode:
-                    if ActOb[0] == -1:
-                        continue
-                    a = Env.Actions[ActOb[0]]
-                    o = Env.Observations[ActOb[1]]
-                    r = Env.Rewards[ActOb[2]]
-                    EpisodeRewards = EpisodeRewards + r
-                    f1.write(a + " " + o + " " + str(r) + ",")
-                    if Env.getGameName() == "Tiger95":
-                        if r == 10:
-                            winTimesEpisode = winTimesEpisode + 1
-                        elif r == -100:
-                            failTimesEpisode = failTimesEpisode + 1
-                        else:
-                            if r != -1:
-                                Exception("reward" + str(r) + "are not seen")
-                    elif Env.getGameName() == "Maze":
-                        if r == 10.0:
-                            winTimesEpisode = winTimesEpisode + 1
-                        elif r == -100.0:
-                            failTimesEpisode = failTimesEpisode + 1
-                    elif Env.getGameName() == "StandTiger":
-                        if r == 30:
-                            winTimesEpisode = winTimesEpisode + 1
-                        elif r == -100:
-                            failTimesEpisode = failTimesEpisode + 1
-                winTimes = winTimes + winTimesEpisode
-                failTime = failTime + failTimesEpisode
-                if winTimesEpisode + failTimesEpisode != 0:
-                    lenActions.append(Parameter.lengthOfAction / (winTimesEpisode + failTimesEpisode))
-                TotalRewards.append(EpisodeRewards)
-                f1.write('\n')
-            averageValue = np.mean(a=TotalRewards, axis=0)
-            variance = np.var(TotalRewards)
-            std = np.std(TotalRewards)
-            if (winTimes + failTime) != 0:
-                winProb = winTimes / (winTimes + failTime)
-            else:
-                winProb = 0
-            # how many actions the agent takes before making final decision
-            f.write("Average Value For Each Episode: " + str(averageValue) + '\n')
-            f.write("The Variance of EpisodeReward: " + str(variance) + '\n')
-            f.write("The Standard Variance of EpisodeReward: " + str(std) + '\n')
-            f.write("The Winning Probability of the agent: " + str(winProb) + '\n')
-            if len(lenActions) == 0:
-                w = -1
-            else:
-                w = np.mean(a=lenActions, axis=-1)
-            f.write("The steps of actions the agent takes before making final decision: " + str(w) + '\n')
-
-
 def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
     trainData.newDataBatch()
     # TrainingData.LoadData(TrainData=trainData, file="../observations/RandomSampling.txt", rewardDict=rewardDict)
@@ -116,71 +62,61 @@ def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
         TrainingData.LoadData(TrainData=trainData, file="epilsonGreedySampling" + str(i) + ".txt",
                               rewardDict=rewardDict)
 
-import sys
-from environment.PacMan import PacMan
+import environment.GymEnv
 import time
 from bin.Util import ConvertLastBatchToTrainSet, readMemoryfromdisk, copyRewardDict
+import autoencoder.VanillaAutoEnc
 
-vars = sys.float_info.min
-
-#TODO: Delete after testing
-def test():
-    print("in PSR/train/PacManTrain.py")
-
-# model: CPSR, TPSR (default = CPSR)
-# policy: fitted-Q, DRL
-# encoder: (Default = None)
-# epochs: int
-
-# def train(model, policy, encoder, epochs):
-def train(epochs):
+def train(gameName, epochs):
+    #TODO: write all inputs to params file
     manager = Manager()
     rewardDict = manager.dict()
     ns = manager.Namespace()
     ns.rewardCount = 0
-    # file = "../train/setting/PacMan.json"
-    file = "PSR/train/setting/PacMan.json"
+    # file = "../train/setting/Gym.json"
+    file = "PSR/train/setting/Gym.json"
     Parameter.readfile(file=file)
-    RandomSamplingForPSR = True
-    isbuiltPSR = True
-    game = PacMan()
-    game.calulateMaxTestID()
-    Parameter.maxTestID = game.maxTestID
+    # RandomSamplingForPSR = True
+    # isbuiltPSR = True
+    Parameter.maxTestID = VanillaAutoEnc.calculateMaxTestId()
     trainData = TrainingData()
     iterNo = 0
-    agent = Agent(PnumActions=game.getNumActions(), epsilon=Parameter.epsilon,
+    print("No. of iterations to run: " + str(epochs))
+    agent = Agent(PnumActions=GymEnv.getNumActions(gameName), epsilon=Parameter.epsilon,
                   inputDim=(Parameter.svdDim,), algorithm=Parameter.algorithm, Parrallel=True)
     print("Learning algorithm/Policy: " + Parameter.algorithm)
 
     # rdict = readMemoryfromdisk(file="../bin/rewardDict.txt")
     rdict = readMemoryfromdisk(file="PSR/bin/rewardDict.txt")
     copyRewardDict(rewardDict=rewardDict, rewardDict1=rdict)
-    psrModel = CompressedPSR(game.getGameName())
+    psrModel = CompressedPSR("Gym")
     psrPool = Pool(Parameter.threadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
     print("Finishing Preparation!")
     loadCheckPoint(trainData=trainData, epoch=iterNo, psrModel=psrModel, rewardDict=rewardDict)
     trainData = trainData.MergeAllBatchData()
     trainSet = None
+    print("Game environment in gym: " + gameName)
     while iterNo < epochs:
-        print("Starting Iteration: " + str(iterNo + 1))
-        if RandomSamplingForPSR:
-            trainData.newDataBatch()
-
-            #edit
-            game.SimulateTrainData(runs=Parameter.runsForCPSR, isRandom=True, psrModel=psrModel,
-                                   trainData=trainData, epoch=iterNo - 1, pool=psrPool,
-                                   RunOnVirtualEnvironment=False, name=game.getGameName(), rewardDict=rewardDict,
-                                   ns=ns)
-
-            psrModel.validActObset = trainData.validActOb
-            WriteEvalUateDataForPacMan(EvalData=trainData.data[trainData.getBatch()], epoch=-1)
-            # trainData.WriteData(file="../observations" + "\\RandomSampling" + str(iterNo) + ".txt")
-            trainData.WriteData(file="PSR/observations" + "\\RandomSampling" + str(iterNo) + ".txt")
-            RandomSamplingForPSR = False
-        if isbuiltPSR:
-            psrModel.build(data=trainData, aos=trainData.validActOb, pool=psrPool, rewardDict=rewardDict)
+    #     print("Starting Iteration: " + str(iterNo + 1))
+    #     if RandomSamplingForPSR:
+    #         trainData.newDataBatch()
+    #
+    #         #edit
+    #         game.SimulateTrainData(runs=Parameter.runsForCPSR, isRandom=True, psrModel=psrModel,
+    #                                trainData=trainData, epoch=iterNo - 1, pool=psrPool,
+    #                                RunOnVirtualEnvironment=False, name=game.getGameName(), rewardDict=rewardDict,
+    #                                ns=ns)
+    #
+    #         psrModel.validActObset = trainData.validActOb
+    #         WriteEvalUateDataForPacMan(EvalData=trainData.data[trainData.getBatch()], epoch=-1)
+    #         # trainData.WriteData(file="../observations" + "\\RandomSampling" + str(iterNo) + ".txt")
+    #         trainData.WriteData(file="PSR/observations" + "\\RandomSampling" + str(iterNo) + ".txt")
+    #         RandomSamplingForPSR = False
+    #     if isbuiltPSR:
+        states = GymEnv.trainInEnv(gameName, 1)
+        print(states)
+        psrModel.build(data=trainData, aos=trainData.validActOb, pool=psrPool, rewardDict=rewardDict)
         psrModel.saveModel(epoch=iterNo)
-        from bin.Util import writerMemoryintodisk
         # writerMemoryintodisk(file="../bin/rewardDict.txt", data=rewardDict.copy())
         writerMemoryintodisk(file="PSR/bin/rewardDict.txt", data=rewardDict.copy())
         print("Convert sampling data into training forms")
@@ -218,5 +154,3 @@ def train(epochs):
         WriteEvalUateDataForPacMan(EvalData=EvalData, epoch=iterNo)
         iterNo = iterNo + 1
 
-if __name__ == "__main__":
-    train(10)
