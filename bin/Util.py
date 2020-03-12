@@ -100,7 +100,8 @@ def ConvertLastBatchToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
     numEpisodePerThread = int(len(Batch) / Parameter.threadPoolSize)
     for i in range(Parameter.threadPoolSize):
         d = Batch[i * numEpisodePerThread:(i + 1) * numEpisodePerThread]
-        fileName = "../tmp//RawData" + str(i) + ".txt"
+        # fileName = "../tmp//RawData" + str(i) + ".txt"
+        fileName = "PSR/tmp//RawData" + str(i) + ".txt"
         writerDataintoDisk(file=fileName, data=d)
         psrModel1 = psrModel.ReturnEmptyObject(name)
         tmpTrainData = data.ReturnEmptyObject()
@@ -123,7 +124,8 @@ def ConvertToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
     numEpisodePerThread = int(len(Batch) / Parameter.threadPoolSize)
     for i in range(Parameter.threadPoolSize):
         d = Batch[i * numEpisodePerThread:(i + 1) * numEpisodePerThread]
-        fileName = "../tmp//RawData" + str(i) + ".txt"
+        # fileName = "../tmp//RawData" + str(i) + ".txt"
+        fileName = "PSR/tmp//RawData" + str(i) + ".txt"
         writerDataintoDisk(file=fileName, data=d)
         psrModel1 = psrModel.ReturnEmptyObject(name)
         tmpTrainData = data.ReturnEmptyObject()

@@ -192,7 +192,8 @@ def ConvertToTrainSet(args):
             CoreTestPredictions1 = psrModel.generateCoreTestPrediction(pvs=pv1)
             trainData.append((CoreTestPredictions.tolist(), aid, r, CoreTestPredictions1.tolist()))
             pv = pv1
-    file = "../tmp//TrainData" + str(ID) + ".txt"
+    # file = "../tmp//TrainData" + str(ID) + ".txt"
+    file = "PSR/tmp//TrainData" + str(ID) + ".txt"
     writerMemoryintodisk(file=file, data=trainData)
     return file
 
@@ -367,7 +368,8 @@ def ConstructingTHMats(args):
             aoMats = ParseAOSequenceAOMats(aoSequence=aoSequences, aoMats=aoMats)
     for key in aoMats.keys():
         aoMats[key] = aoMats[key].tolist()
-    file = "../tmp//aoMats" + str(ID) + ".txt"
+    # file = "../tmp//aoMats" + str(ID) + ".txt"
+    file = "PSR/tmp//aoMats" + str(ID) + ".txt"
     writerMemoryintodisk(file=file, data=aoMats)
     return THMat, HistMat, file
 
