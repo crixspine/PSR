@@ -97,60 +97,43 @@ def train(gameName, epochs):
     trainSet = None
     print("Game environment in gym: " + gameName)
     while iterNo < epochs:
-    #     print("Starting Iteration: " + str(iterNo + 1))
-    #     if RandomSamplingForPSR:
-    #         trainData.newDataBatch()
-    #
-    #         #edit
-    #         game.SimulateTrainData(runs=Parameter.runsForCPSR, isRandom=True, psrModel=psrModel,
-    #                                trainData=trainData, epoch=iterNo - 1, pool=psrPool,
-    #                                RunOnVirtualEnvironment=False, name=game.getGameName(), rewardDict=rewardDict,
-    #                                ns=ns)
-    #
-    #         psrModel.validActObset = trainData.validActOb
-    #         WriteEvalUateDataForPacMan(EvalData=trainData.data[trainData.getBatch()], epoch=-1)
-    #         # trainData.WriteData(file="../observations" + "\\RandomSampling" + str(iterNo) + ".txt")
-    #         trainData.WriteData(file="PSR/observations" + "\\RandomSampling" + str(iterNo) + ".txt")
-    #         RandomSamplingForPSR = False
-    #     if isbuiltPSR:
-        states = GymEnv.trainInEnv(gameName, 1)
-        print(states)
-        psrModel.build(data=trainData, aos=trainData.validActOb, pool=psrPool, rewardDict=rewardDict)
-        psrModel.saveModel(epoch=iterNo)
-        # writerMemoryintodisk(file="../bin/rewardDict.txt", data=rewardDict.copy())
-        writerMemoryintodisk(file="PSR/bin/rewardDict.txt", data=rewardDict.copy())
-        print("Convert sampling data into training forms")
-        if trainSet is None:
-            trainSet = ConvertToTrainSet(data=trainData, RewardDict=rewardDict,
-                                         pool=psrPool, epoch=iterNo, name=game.getGameName(), psrModel=psrModel)
-        else:
-            trainSet = trainSet + ConvertLastBatchToTrainSet(data=trainData, RewardDict=rewardDict,
-                                                             pool=psrPool, epoch=iterNo, name=game.getGameName(),
-                                                             psrModel=psrModel)
-        print("Starting training")
-        tick1 = time.time()
-        print("Iteration: %d/%d"%(iterNo+1, epochs))
-        agent.Train_And_Update(data=trainSet, epoch=iterNo, pool=psrPool)
-        tick2 = time.time()
-        print("The time spent on training:" + str(tick2 - tick1))
-        agent.SaveWeight(epoch=iterNo)
-        print("Evaluating the agent")
-        tick3 = time.time()
-        EvalData = game.SimulateTestingRun(runs=Parameter.testingRuns, epoch=iterNo, pool=psrPool,  #edit
-                                           psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns) #edit
-        tick4 = time.time()
-        print("The time spent on Evaluate:" + str(tick4 - tick3))
-        trainData.newDataBatch()
-
-        #edit
-        game.SimulateTrainData(runs=Parameter.runsForLearning, psrModel=psrModel, trainData=trainData,
-                               isRandom=False, epoch=iterNo, pool=psrPool,
-                               RunOnVirtualEnvironment=Parameter.trainingOnVirtualEnvironment,
-                               name=game.getGameName(), rewardDict=rewardDict, ns=ns)
-
-        # trainData.WriteData(file="../observations/epsilonGreedySampling" + str(iterNo) + ".txt")
-        trainData.WriteData(file="PSR/observations/epsilonGreedySampling" + str(iterNo) + ".txt")
-
-        WriteEvalUateDataForPacMan(EvalData=EvalData, epoch=iterNo)
+        states = GymEnv.trainInEnv(gameName, iterNo)
+        # psrModel.build(data=trainData, aos=trainData.validActOb, pool=psrPool, rewardDict=rewardDict)
+        # psrModel.saveModel(epoch=iterNo)
+        # # writerMemoryintodisk(file="../bin/rewardDict.txt", data=rewardDict.copy())
+        # writerMemoryintodisk(file="PSR/bin/rewardDict.txt", data=rewardDict.copy())
+        # print("Convert sampling data into training forms")
+        # if trainSet is None:
+        #     trainSet = ConvertToTrainSet(data=trainData, RewardDict=rewardDict,
+        #                                  pool=psrPool, epoch=iterNo, name=game.getGameName(), psrModel=psrModel)
+        # else:
+        #     trainSet = trainSet + ConvertLastBatchToTrainSet(data=trainData, RewardDict=rewardDict,
+        #                                                      pool=psrPool, epoch=iterNo, name=game.getGameName(),
+        #                                                      psrModel=psrModel)
+        # print("Starting training")
+        # tick1 = time.time()
+        # print("Iteration: %d/%d"%(iterNo+1, epochs))
+        # agent.Train_And_Update(data=trainSet, epoch=iterNo, pool=psrPool)
+        # tick2 = time.time()
+        # print("The time spent on training:" + str(tick2 - tick1))
+        # agent.SaveWeight(epoch=iterNo)
+        # print("Evaluating the agent")
+        # tick3 = time.time()
+        # EvalData = game.SimulateTestingRun(runs=Parameter.testingRuns, epoch=iterNo, pool=psrPool,  #edit
+        #                                    psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns) #edit
+        # tick4 = time.time()
+        # print("The time spent on Evaluate:" + str(tick4 - tick3))
+        # trainData.newDataBatch()
+        #
+        # #edit
+        # game.SimulateTrainData(runs=Parameter.runsForLearning, psrModel=psrModel, trainData=trainData,
+        #                        isRandom=False, epoch=iterNo, pool=psrPool,
+        #                        RunOnVirtualEnvironment=Parameter.trainingOnVirtualEnvironment,
+        #                        name=game.getGameName(), rewardDict=rewardDict, ns=ns)
+        #
+        # # trainData.WriteData(file="../observations/epsilonGreedySampling" + str(iterNo) + ".txt")
+        # trainData.WriteData(file="PSR/observations/epsilonGreedySampling" + str(iterNo) + ".txt")
+        #
+        # WriteEvalUateDataForPacMan(EvalData=EvalData, epoch=iterNo)
         iterNo = iterNo + 1
 
