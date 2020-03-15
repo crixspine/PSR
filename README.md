@@ -1,7 +1,7 @@
 # Predictive State Representation (PSR) Models
 
 ## Description
-This toolkit allows the PSR modelling of dynamical systems to train agents in certain environments. The original code is from: *https://github.com/williamleif/PSRToolbox*, and is packaged into this modular Python library format which is much more efficient, readable and usable.
+This toolkit allows the PSR modelling of dynamical systems to train agents in certain environments. The original code is from: *https://github.com/williamleif/PSRToolbox*, and is packaged into this modular Python library format which is much more usable.
 
 ## Basics
 * **environment**: Provides all the environments available to train the agent in. ``Maze``, ``PacMan``, ``StandTiger`` and ``Tiger95`` are all implmented in the code itself. ``GymEnv`` uses the OpenAI gym environments: *https://gym.openai.com/*. Use only Atari games with RAM as input: *https://gym.openai.com/envs/#atari*
