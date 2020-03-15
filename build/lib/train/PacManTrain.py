@@ -172,8 +172,8 @@ if __name__ == "__main__":
         if isbuiltPSR:
             psrModel.build(data=trainData, aos=trainData.validActOb, pool=psrPool, rewardDict=rewardDict)
         psrModel.saveModel(epoch=iterNo)
-        from bin.Util import writerMemoryintodisk
-        writerMemoryintodisk(file="../rewardDict.txt", data=rewardDict.copy())
+        from bin.Util import writeMemoryintodisk
+        writeMemoryintodisk(file="../rewardDict.txt", data=rewardDict.copy())
         print("Convert sampling data into training forms")
         if trainSet is None:
             trainSet = ConvertToTrainSet(data=trainData, RewardDict=rewardDict,

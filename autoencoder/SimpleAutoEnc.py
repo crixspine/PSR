@@ -1,41 +1,36 @@
-# same as SimpleAutoEnc, but with hidden layers
+# keras implementation; simpler and more lightweight
 from keras.models import Model, load_model
 from keras.layers import Dense, Input
-
 
 def calculateMaxTestId():
     # return encoded code max dimensions/permutations
     # permutations of each single value ^ code_size
-    # example observation for code_size=4: [   0.   545.79706   0.   0.   ]
+    # example observation: [   0.   545.79706   0.   0.   ]
     # example observation fot code_size=1: [   0.   471.27356   0.   0.   ]
     return (10**8)**1
 
 def encodeFromModel(observation):
     print("Loading Encoder...")
     input = [observation]
-    model = load_model('./EncoderNetwork',compile=False)
+    model = load_model('./EncoderNetwork')
     print('Encoded Observations: ')
     return model.predict(input)
 
 def trainModel(observation, input_size):
     input = [observation]
-    hidden_size = 16
     code_size = 1
     input_obs = Input(shape=(input_size,))
 
     # representation of encoder and decoder networks
-    encoded = Dense(hidden_size, activation='relu')(input_obs)
-    encoded = Dense(code_size, activation='relu')(encoded)
-    decoded = Dense(hidden_size,activation='relu')(encoded)
-    decoded = Dense(input_size, activation='relu')(decoded)
+    encoded = Dense(code_size, activation='relu')(input_obs)
+    decoded = Dense(input_size, activation='relu')(encoded)
 
     # implementing encoder and decoder model
     autoencoder = Model(input_obs, decoded)
     encoder = Model(input_obs, encoded)
     encoded_input = Input(shape=(code_size,))
-    decoder_layer = autoencoder.layers[-2](encoded_input)
-    decoder_layer = autoencoder.layers[-1](decoder_layer)
-    decoder = Model(encoded_input, decoder_layer)
+    decoder_layer = autoencoder.layers[-1]
+    decoder = Model(encoded_input, decoder_layer(encoded_input))
 
     print("Training Autoencoder Model...")
     autoencoder.compile(optimizer='adam', loss='binary_crossentropy')

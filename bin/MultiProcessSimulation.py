@@ -1,6 +1,6 @@
 from bin.TrainingData import TrainingData
 from bin.Agent import Agent
-from bin.Util import writerMemoryintodisk, readDataintoDisk, group2test
+from bin.Util import writeMemoryintodisk, readDataintoDisk, group2test
 from numpy.random import choice, seed, normal
 import os
 import numpy as np
@@ -194,7 +194,7 @@ def ConvertToTrainSet(args):
             pv = pv1
     # file = "../tmp//TrainData" + str(ID) + ".txt"
     file = "PSR/tmp//TrainData" + str(ID) + ".txt"
-    writerMemoryintodisk(file=file, data=trainData)
+    writeMemoryintodisk(file=file, data=trainData)
     return file
 
 
@@ -370,7 +370,7 @@ def ConstructingTHMats(args):
         aoMats[key] = aoMats[key].tolist()
     # file = "../tmp//aoMats" + str(ID) + ".txt"
     file = "PSR/tmp//aoMats" + str(ID) + ".txt"
-    writerMemoryintodisk(file=file, data=aoMats)
+    writeMemoryintodisk(file=file, data=aoMats)
     return THMat, HistMat, file
 
 

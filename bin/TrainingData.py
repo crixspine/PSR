@@ -30,9 +30,9 @@ class TrainingData:
         return TrainingData()
 
     def WriteData(self, file):
-        from bin.Util import writerDataintoDisk
+        from bin.Util import writeDataintoDisk
         idx = self.getBatch()
-        writerDataintoDisk(file=file, data=self.data[idx])
+        writeDataintoDisk(file=file, data=self.data[idx])
 
     @staticmethod
     def LoadData(TrainData, file, rewardDict):

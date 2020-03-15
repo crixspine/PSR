@@ -2,7 +2,7 @@ from model.PSRmodel import CompressedPSR
 import numpy as np
 from bin.MultiProcessSimulation import ConstructingTHMats
 from bin import Parameter
-from bin.Util import writerDataintoDisk, readaoMatsFromdisk
+from bin.Util import writeDataintoDisk, readaoMatsFromdisk
 
 
 class TransformedPSR(CompressedPSR):
@@ -38,7 +38,7 @@ class TransformedPSR(CompressedPSR):
         for i in range(Parameter.threadPoolSize):
             d = data.data[data.getBatch()][i * actObsPerThread:(i + 1) * actObsPerThread:]
             fileName = "tmp//dataForThread" + str(i) + ".txt"
-            writerDataintoDisk(file=fileName, data=d)
+            writeDataintoDisk(file=fileName, data=d)
             tmpTrainData = data.ReturnEmptyObject()
             args.append([fileName, data.testDict, data.histDict, data.validActOb, "TPSR", i, tmpTrainData, rewardDict])
         outputs = pool.map(func=ConstructingTHMats, iterable=args)

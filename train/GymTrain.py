@@ -1,22 +1,14 @@
-from autoencoder import VanillaAutoEnc
+from autoencoder import SimpleAutoEnc, DeepAutoEnc
 from environment import GymEnv
 from model.PSRmodel import CompressedPSR
 from bin.TrainingData import TrainingData
 from bin.Agent import Agent
 from bin import Parameter
 from multiprocessing import Pool, Manager, Lock
-from bin.Util import ConvertToTrainSet, writerMemoryintodisk
+from bin.Util import ConvertToTrainSet, writeMemoryintodisk
 import os
 import numpy as np
 from bin.MultiProcessSimulation import init
-
-import environment.GymEnv
-
-# model: CPSR, TPSR (default = CPSR)
-# policy: fitted-Q, DRL
-# encoder: (Default = None)
-# epochs: int
-
 
 def WriteEvalUateDataForGym(EvalData, epoch):
     if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
@@ -52,7 +44,6 @@ def WriteEvalUateDataForGym(EvalData, epoch):
         else:
             f.write("The wining Probability:" + str(-1))
 
-
 def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
     trainData.newDataBatch()
     # TrainingData.LoadData(TrainData=trainData, file="../observations/RandomSampling.txt", rewardDict=rewardDict)
@@ -62,12 +53,15 @@ def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
         TrainingData.LoadData(TrainData=trainData, file="epilsonGreedySampling" + str(i) + ".txt",
                               rewardDict=rewardDict)
 
-import environment.GymEnv
 import time
 from bin.Util import ConvertLastBatchToTrainSet, readMemoryfromdisk, copyRewardDict
-import autoencoder.VanillaAutoEnc
 
-def train(gameName, epochs):
+# gameName = game from Gym env
+# model: CPSR, TPSR (default = CPSR)
+# policy: fitted-Q, DRL
+# encoder: 'simple' or 'deep'
+# epochs: int
+def train(gameName, epochs, autoencoder):
     #TODO: write all inputs to params file
     manager = Manager()
     rewardDict = manager.dict()
@@ -78,7 +72,10 @@ def train(gameName, epochs):
     Parameter.readfile(file=file)
     # RandomSamplingForPSR = True
     # isbuiltPSR = True
-    Parameter.maxTestID = VanillaAutoEnc.calculateMaxTestId()
+    if (autoencoder == 'simple'):
+        Parameter.maxTestID = SimpleAutoEnc.calculateMaxTestId()
+    if (autoencoder == 'deep'):
+        Parameter.maxTestID = DeepAutoEnc.calculateMaxTestId()
     trainData = TrainingData()
     iterNo = 0
     print("No. of iterations to run: " + str(epochs))
@@ -97,7 +94,9 @@ def train(gameName, epochs):
     trainSet = None
     print("Game environment in gym: " + gameName)
     while iterNo < epochs:
-        states = GymEnv.trainInEnv(gameName, iterNo)
+        print("Starting Iteration: " + str(iterNo + 1))
+        states = GymEnv.trainInEnv(gameName, iterNo, autoencoder)
+        print(states)
         # psrModel.build(data=trainData, aos=trainData.validActOb, pool=psrPool, rewardDict=rewardDict)
         # psrModel.saveModel(epoch=iterNo)
         # # writerMemoryintodisk(file="../bin/rewardDict.txt", data=rewardDict.copy())
@@ -110,7 +109,7 @@ def train(gameName, epochs):
         #     trainSet = trainSet + ConvertLastBatchToTrainSet(data=trainData, RewardDict=rewardDict,
         #                                                      pool=psrPool, epoch=iterNo, name=game.getGameName(),
         #                                                      psrModel=psrModel)
-        # print("Starting training")
+        # print("Starting training of Agent")
         # tick1 = time.time()
         # print("Iteration: %d/%d"%(iterNo+1, epochs))
         # agent.Train_And_Update(data=trainSet, epoch=iterNo, pool=psrPool)
@@ -133,7 +132,5 @@ def train(gameName, epochs):
         #
         # # trainData.WriteData(file="../observations/epsilonGreedySampling" + str(iterNo) + ".txt")
         # trainData.WriteData(file="PSR/observations/epsilonGreedySampling" + str(iterNo) + ".txt")
-        #
-        # WriteEvalUateDataForPacMan(EvalData=EvalData, epoch=iterNo)
+        # WriteEvalUateDataForGym(EvalData=EvalData, epoch=iterNo)
         iterNo = iterNo + 1
-

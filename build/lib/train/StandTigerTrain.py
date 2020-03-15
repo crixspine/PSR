@@ -282,7 +282,7 @@ def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
     # psrModel.loadModel(epoch=epoch)
 
 
-from bin.Util import writerMemoryintodisk
+from bin.Util import writeMemoryintodisk
 import sys
 import time
 from bin.Util import ConvertLastBatchToTrainSet
@@ -349,7 +349,7 @@ if __name__ == "__main__":
 
         # rdict = dict()
         # copyRewardDict(rewardDict=rdict, rewardDict1=rewardDict)
-        writerMemoryintodisk(file="../rewardDict.txt", data=rewardDict.copy())
+        writeMemoryintodisk(file="../rewardDict.txt", data=rewardDict.copy())
         print("Convert sampling data into training forms")
         if trainSet is None:
             trainSet = ConvertToTrainSet(data=trainData, RewardDict=rewardDict,

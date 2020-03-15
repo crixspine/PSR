@@ -123,10 +123,6 @@ from bin.Util import ConvertLastBatchToTrainSet, readMemoryfromdisk, copyRewardD
 
 vars = sys.float_info.min
 
-#TODO: Delete after testing
-def test():
-    print("in PSR/train/PacManTrain.py")
-
 # model: CPSR, TPSR (default = CPSR)
 # policy: fitted-Q, DRL
 # encoder: (Default = None)
@@ -137,6 +133,8 @@ def train(epochs):
     manager = Manager()
     rewardDict = manager.dict()
     ns = manager.Namespace()
+    if not os.path.exists("PSR/tmp"):
+        os.makedirs("PSR/tmp")
     ns.rewardCount = 0
     # file = "../train/setting/PacMan.json"
     file = "PSR/train/setting/PacMan.json"
@@ -180,9 +178,9 @@ def train(epochs):
         if isbuiltPSR:
             psrModel.build(data=trainData, aos=trainData.validActOb, pool=psrPool, rewardDict=rewardDict)
         psrModel.saveModel(epoch=iterNo)
-        from bin.Util import writerMemoryintodisk
+        from bin.Util import writeMemoryintodisk
         # writerMemoryintodisk(file="../bin/rewardDict.txt", data=rewardDict.copy())
-        writerMemoryintodisk(file="PSR/bin/rewardDict.txt", data=rewardDict.copy())
+        writeMemoryintodisk(file="PSR/bin/rewardDict.txt", data=rewardDict.copy())
         print("Convert sampling data into training forms")
         if trainSet is None:
             trainSet = ConvertToTrainSet(data=trainData, RewardDict=rewardDict,

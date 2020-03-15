@@ -7,8 +7,8 @@ import autoencoder.VanillaAutoEnc
 # policy: fitted-Q, DRL
 # encoder: (Default = None)
 # epochs: int
-from autoencoder import VanillaAutoEnc
-from autoencoder import DeepAutoEnc
+from autoencoder import VanillaAutoEnc, DeepAutoEnc
+from autoencoder import SimpleAutoEnc
 from keras.models import load_model
 
 def getNumObservations(gameName):
@@ -21,13 +21,12 @@ def getNumActions(gameName):
     action_space = str(env.action_space)
     return int(action_space.split('(')[1].split(')')[0])
 
-def trainInEnv(gameName, iterNo):
-    env = gym.make("MsPacman-ram-v0")
+def trainInEnv(gameName, iterNo, autoencoder):
+    env = gym.make(gameName)
     size = getNumObservations(gameName)
     actions = getNumActions(gameName)
-    print("Action Space: " + str(actions) + ", Observation Space: " + str(size))
-    print(env.observation_space)
-
+    if (iterNo == 0):
+        print("Action Space: " + str(actions) + ", Observation Space: " + str(size))
     observation = env.reset()
     done = False
     obs_epoch = []
@@ -39,19 +38,28 @@ def trainInEnv(gameName, iterNo):
         for val in observation:
             obs_step.append(val)
         obs_epoch.append(obs_step)
-
         if done:
-            print("Finished training epoch " + str(iterNo))
+            print("Finished training iteration " + str(iterNo+1))
+            print("Observations from Gym for iteration " + str(iterNo+1) + ":")
             print(obs_epoch)
-            if (iterNo == 0):
-                # train model only on the first epoch
-                encoded_obs = VanillaAutoEnc.trainModel(obs_epoch, size)
-            else:
-                encoded_obs = VanillaAutoEnc.encodeFromModel(obs_epoch, size)
-            break
-
+            if (autoencoder == 'simple'):
+                if (iterNo == 0):
+                    # train model only on the first epoch
+                    encoded_obs = SimpleAutoEnc.trainModel(obs_epoch, size)
+                else:
+                    # load trained model from first epoch
+                    encoded_obs = SimpleAutoEnc.encodeFromModel(obs_epoch)
+            if (autoencoder == 'deep'):
+                if (iterNo == 0):
+                    # train model only on the first epoch
+                    encoded_obs = DeepAutoEnc.trainModel(obs_epoch, size)
+                else:
+                    # load trained model from first epoch
+                    encoded_obs = DeepAutoEnc.encodeFromModel(obs_epoch)
+            # save encoded observations as integers in order to save as scalable PSR models
+            # this incurs an additional loss of information after encoding (which already causes loss of information!)
+            # might not need to convert if saving in small dimensions (code size in autoencoder as 1-3)
+            # encoded_obs_int = encoded_obs.astype(int)
+            # print(encoded_obs_int)
     env.close()
     return encoded_obs
-
-if __name__  == "__main__":
-    train(game = "MsPacman-ram-v0", epochs = 10)

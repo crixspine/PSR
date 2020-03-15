@@ -3,14 +3,14 @@ import numpy as np
 import json
 import os
 
-def writerMemoryintodisk(file, data):
+def writeMemoryintodisk(file, data):
     with open(file=file, mode='w') as f:
         s = json.dumps(data)
         f.write(s)
     print("Finish writing " + file)
 
 
-def writerDataintoDisk(file, data):
+def writeDataintoDisk(file, data):
     with open(file=file, mode='w') as f:
         for episode in data:
             f.write("Terminate!")
@@ -102,7 +102,7 @@ def ConvertLastBatchToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
         d = Batch[i * numEpisodePerThread:(i + 1) * numEpisodePerThread]
         # fileName = "../tmp//RawData" + str(i) + ".txt"
         fileName = "PSR/tmp//RawData" + str(i) + ".txt"
-        writerDataintoDisk(file=fileName, data=d)
+        writeDataintoDisk(file=fileName, data=d)
         psrModel1 = psrModel.ReturnEmptyObject(name)
         tmpTrainData = data.ReturnEmptyObject()
         args.append([psrModel1, fileName, RewardDict, i, epoch, tmpTrainData])
@@ -126,7 +126,7 @@ def ConvertToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
         d = Batch[i * numEpisodePerThread:(i + 1) * numEpisodePerThread]
         # fileName = "../tmp//RawData" + str(i) + ".txt"
         fileName = "PSR/tmp//RawData" + str(i) + ".txt"
-        writerDataintoDisk(file=fileName, data=d)
+        writeDataintoDisk(file=fileName, data=d)
         psrModel1 = psrModel.ReturnEmptyObject(name)
         tmpTrainData = data.ReturnEmptyObject()
         args.append([psrModel1, fileName, RewardDict, i, epoch, tmpTrainData])
