@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from bin import Parameter
 from bin.MultiProcessSimulation import ConstructingTHMats
@@ -57,38 +58,30 @@ class CompressedPSR:
         self.game = game
 
     def saveModel(self, epoch):
-        import os
-        # if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-        #     os.makedirs("../observations" + "\\Epoch " + str(epoch))
-        # writerMemoryintodisk(file="../observations" + "\\Epoch " + str(epoch) + "\\mInf.txt", data=self.mInf.tolist())
-        # writerMemoryintodisk(file="../observations" + "\\Epoch " + str(epoch) + "\\pv.txt", data=self.pv.tolist())
-        if not os.path.exists("PSR/observations" + "\\Epoch " + str(epoch)):
-            os.makedirs("PSR/observations" + "\\Epoch " + str(epoch))
-        writeMemoryintodisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\mInf.txt", data=self.mInf.tolist())
-        writeMemoryintodisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\pv.txt", data=self.pv.tolist())
+        dir = os.path.abspath(os.getcwd())
+        if not os.path.exists(dir + "/observations/Epoch " + str(epoch)):
+            os.makedirs(dir + "/observations/Epoch " + str(epoch))
+        writeMemoryintodisk(file=dir + "/observations/Epoch " + str(epoch) + "/mInf.txt", data=self.mInf.tolist())
+        writeMemoryintodisk(file=dir + "/observations/Epoch " + str(epoch) + "/pv.txt", data=self.pv.tolist())
         aoMats = dict()
         for key in self.CaoMats.keys():
             aoMats[key] = self.CaoMats[key].tolist()
-        # writerMemoryintodisk(file="../observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt", data=aoMats)
-        writeMemoryintodisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt", data=aoMats)
+        writeMemoryintodisk(file=dir + "/observations/Epoch " + str(epoch) + "/aoMats.txt", data=aoMats)
 
     def loadModel(self, epoch):
-        import os
-        # if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-        #     os.makedirs("../observations" + "\\Epoch " + str(epoch))
-        # self.CaoMats = readaoMatsFromdisk(file="../observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt")
-        # self.mInf = np.array(readMemoryfromdisk(file="../observations" + "\\Epoch " + str(epoch) + "\\mInf.txt"))
-        # self.pv = np.array(readMemoryfromdisk(file="../observations" + "\\Epoch " + str(epoch) + "\\pv.txt"))
-        if not os.path.exists("PSR/observations" + "\\Epoch " + str(epoch)):
-            os.makedirs("PSR/observations" + "\\Epoch " + str(epoch))
-        self.CaoMats = readaoMatsFromdisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\aoMats.txt")
-        self.mInf = np.array(readMemoryfromdisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\mInf.txt"))
-        self.pv = np.array(readMemoryfromdisk(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\pv.txt"))
+        dir = os.path.abspath(os.getcwd())
+        if not os.path.exists(dir + "/observations/Epoch " + str(epoch)):
+            os.makedirs(dir + "/observations/Epoch " + str(epoch))
+        self.CaoMats = readaoMatsFromdisk(file=dir + "/observations/Epoch " + str(epoch) + "/aoMats.txt")
+        self.mInf = np.array(readMemoryfromdisk(file=dir + "/observations/Epoch " + str(epoch) + "/mInf.txt"))
+        self.pv = np.array(readMemoryfromdisk(file=dir + "/observations/Epoch " + str(epoch) + "/pv.txt"))
         self.isbuilt = True
         keys = self.CaoMats.keys()
         self.validActObset = list(keys)
 
     def build(self, data, aos, pool, rewardDict):
+        import os
+        dir = os.path.abspath(os.getcwd())
         # initalize multiprocess pool in each round in case the new data comes
         if Parameter.maxTestID == -1:
             Exception("maxTestID not been updated")
@@ -109,8 +102,7 @@ class CompressedPSR:
         args = []
         for i in range(Parameter.threadPoolSize):
             d = data.data[data.getBatch()][i * actObsPerThread:(i + 1) * actObsPerThread:]
-            # fileName = "../tmp//dataForThread" + str(i) + ".txt"
-            fileName = "PSR/tmp//dataForThread" + str(i) + ".txt"
+            fileName = dir + "/tmp/dataForThread" + str(i) + ".txt"
             writeDataintoDisk(file=fileName, data=d)
             tmpTrainData = data.ReturnEmptyObject()
             args.append([fileName, data.testDict, data.histDict, data.validActOb, "CPSR", i, tmpTrainData, rewardDict])

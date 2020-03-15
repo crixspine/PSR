@@ -1,4 +1,5 @@
 # keras implementation; simpler and more lightweight
+import os
 from keras.models import Model, load_model
 from keras.layers import Dense, Input
 
@@ -10,13 +11,17 @@ def calculateMaxTestId():
     return (10**8)**1
 
 def encodeFromModel(observation):
+    dir = os.path.abspath(os.getcwd())
     print("Loading Encoder...")
     input = [observation]
-    model = load_model('./EncoderNetwork')
-    print('Encoded Observations: ')
+    if os.path.exists(dir + "/AutoEncModel"):
+        model = load_model(dir + '/AutoEncModel/EncoderNetwork')
+    else:
+        Exception("AutoEncoder model not found!")
     return model.predict(input)
 
 def trainModel(observation, input_size):
+    dir = os.path.abspath(os.getcwd())
     input = [observation]
     code_size = 1
     input_obs = Input(shape=(input_size,))
@@ -42,15 +47,21 @@ def trainModel(observation, input_size):
     autoencoder.evaluate(input, input,
                          verbose=1)
     print("Saving Autoencoder model")
-    encoder.save('./EncoderNetwork')
-    decoder.save('./DecoderNetwork')
+    if not os.path.exists(dir + "/AutoEncModel"):
+        os.makedirs(dir + "/AutoEncModel")
+    encoder.save(dir + '/AutoEncModel/EncoderNetwork')
+    decoder.save(dir + '/AutoEncModel/DecoderNetwork')
     print('Encoded Observations: ')
     return encoder.predict(input)
 
 def decode(observation):
+    dir = os.path.abspath(os.getcwd())
     print("Loading Decoder...")
     input = [observation]
-    model = load_model('./DecoderNetwork')
+    if os.path.exists(dir + "/AutoEncModel"):
+        model = load_model(dir + '/AutoEncModel/DecoderNetwork')
+    else:
+        Exception("AutoEncoder model not found!")
     print('Decoded Observations: ')
     return model.predict(input)
 

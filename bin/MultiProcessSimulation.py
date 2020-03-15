@@ -27,7 +27,7 @@ def SimulateRunsOnCPSR(args):
     seed(int(args[4]))
     if epoch > -1:
         psrModel.loadModel(epoch)
-    print("the seed:" + str(args[4]))
+    print("The seed:" + str(args[4]))
     dataCollector = TrainingData()
     dataCollector.newDataBatch()
     agent = Agent(PnumActions=numactions, epsilon=Parameter.epsilon, inputDim=(Parameter.svdDim,),
@@ -81,7 +81,7 @@ def SimulateTrainDataMultiProcess(args):
     ns = args[8]
     if epoch > -1 and not isRandom:
         psrModel.loadModel(epoch)
-    print("the seed:" + str(args[6]))
+    print("The seed:" + str(args[6]))
     agent = Agent(PnumActions=numactions, epsilon=Parameter.epsilon, inputDim=(Parameter.svdDim,),
                   algorithm=Parameter.algorithm, Parrallel=False)
     isloaded = False
@@ -143,7 +143,7 @@ def EvaluateMultiProcess(args):
         if psrModel.isbuilt:
             pv = psrModel.getCurrentPV()
         else:
-            Exception("The CPSR model are not built")
+            Exception("The CPSR model is not built!")
         count = 0
         #####################################################
         # Add a new Episode
@@ -165,6 +165,7 @@ def EvaluateMultiProcess(args):
 
 
 def ConvertToTrainSet(args):
+    dir = os.path.abspath(os.getcwd())
     psrModel = args[0]
     fileName = args[1]
     rewardDict = args[2]
@@ -192,8 +193,7 @@ def ConvertToTrainSet(args):
             CoreTestPredictions1 = psrModel.generateCoreTestPrediction(pvs=pv1)
             trainData.append((CoreTestPredictions.tolist(), aid, r, CoreTestPredictions1.tolist()))
             pv = pv1
-    # file = "../tmp//TrainData" + str(ID) + ".txt"
-    file = "PSR/tmp//TrainData" + str(ID) + ".txt"
+    file = dir + "/tmp/TrainData" + str(ID) + ".txt"
     writeMemoryintodisk(file=file, data=trainData)
     return file
 
@@ -289,7 +289,7 @@ def setNullHistoryTHMats(aoSequence, THMat, HistMat):
     elif psrType == "TPSR":
         return setTHCountTPSR(tid=tid, hid=hid, THMat=THMat, HistMat=HistMat)
     else:
-        Exception("psrType are unknown!")
+        Exception("psrType is unknown!")
 
 
 def ParseAoSequenceTHMats(aoSequence, THMat, HistMat):
@@ -312,10 +312,11 @@ def ParseAoSequenceTHMats(aoSequence, THMat, HistMat):
         elif psrType == "TPSR":
             THMat, HistMat = setTHCountTPSR(tid=tid, hid=hid, THMat=THMat, HistMat=HistMat)
         else:
-            Exception("psrType are unknown!")
+            Exception("psrType is unknown!")
     return THMat, HistMat
 
 def ConstructingTHMats(args):
+    dir = os.path.abspath(os.getcwd())
     global tests, hists, validActObs, psrType
     filename = args[0]
     tests = args[1]
@@ -368,8 +369,7 @@ def ConstructingTHMats(args):
             aoMats = ParseAOSequenceAOMats(aoSequence=aoSequences, aoMats=aoMats)
     for key in aoMats.keys():
         aoMats[key] = aoMats[key].tolist()
-    # file = "../tmp//aoMats" + str(ID) + ".txt"
-    file = "PSR/tmp//aoMats" + str(ID) + ".txt"
+    file = dir + "/tmp/aoMats" + str(ID) + ".txt"
     writeMemoryintodisk(file=file, data=aoMats)
     return THMat, HistMat, file
 
@@ -415,7 +415,7 @@ def ParseAOSequenceAOMats(aoSequence, aoMats):
         elif psrType == "TPSR":
             aoMats = IncrementAOMatsTPSR(tid=tid, hid=hid, aos=ao, aoMats=aoMats)
         else:
-            Exception("psrType are unknown")
+            Exception("psrType is unknown!")
     return aoMats
 
 

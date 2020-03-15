@@ -1,15 +1,5 @@
 import gym
-import numpy as np
-import autoencoder.VanillaAutoEnc
-
-# game: gym env, e.g. "MsPacman-ram-v0
-# model: CPSR, TPSR (default = CPSR)
-# policy: fitted-Q, DRL
-# encoder: (Default = None)
-# epochs: int
-from autoencoder import VanillaAutoEnc, DeepAutoEnc
-from autoencoder import SimpleAutoEnc
-from keras.models import load_model
+from autoencoder import DeepAutoEnc, SimpleAutoEnc
 
 def getNumObservations(gameName):
     env = gym.make(gameName)
@@ -21,6 +11,10 @@ def getNumActions(gameName):
     action_space = str(env.action_space)
     return int(action_space.split('(')[1].split(')')[0])
 
+
+# gameName: gym env, e.g. "MsPacman-ram-v0
+# iterNo: training iteration no.
+# autoencoder: 'simple' or 'deep'
 def trainInEnv(gameName, iterNo, autoencoder):
     env = gym.make(gameName)
     size = getNumObservations(gameName)
