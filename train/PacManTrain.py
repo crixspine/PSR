@@ -114,7 +114,7 @@ def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
     TrainingData.LoadData(TrainData=trainData, file="PSR/RandomSampling.txt", rewardDict=rewardDict)
     for i in range(epoch):
         trainData.newDataBatch()
-        TrainingData.LoadData(TrainData=trainData, file="epsilonGreedySampling" + str(i) + ".txt",
+        TrainingData.LoadData(TrainData=trainData, file=dir + "/observations/epsilonGreedySampling" + str(i) + ".txt",
                               rewardDict=rewardDict)
 
 import sys
@@ -192,20 +192,20 @@ def train(epochs):
         print("Iteration: %d/%d"%(iterNo+1, epochs))
         agent.Train_And_Update(data=trainSet, epoch=iterNo, pool=psrPool)
         tick2 = time.time()
-        print("The time spent on training:" + str(tick2 - tick1))
+        print("The time spent on training: " + str(tick2 - tick1) + "s")
         agent.SaveWeight(epoch=iterNo)
         print("Evaluating the agent")
         tick3 = time.time()
         EvalData = game.SimulateTestingRun(runs=Parameter.testingRuns, epoch=iterNo, pool=psrPool,  #edit
                                            psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns) #edit
         tick4 = time.time()
-        print("The time spent on Evaluate:" + str(tick4 - tick3))
+        print("The time spent on Evaluate: " + str(tick4 - tick3) + "s")
         trainData.newDataBatch()
         game.SimulateTrainData(runs=Parameter.runsForLearning, psrModel=psrModel, trainData=trainData,
                                isRandom=False, epoch=iterNo, pool=psrPool,
                                RunOnVirtualEnvironment=Parameter.trainingOnVirtualEnvironment,
                                name=game.getGameName(), rewardDict=rewardDict, ns=ns)
-        trainData.WriteData(file="PSR/observations/epsilonGreedySampling" + str(iterNo) + ".txt")
+        trainData.WriteData(file=dir + "/observations/epsilonGreedySampling" + str(iterNo) + ".txt")
         WriteEvalUateDataForPacMan(EvalData=EvalData, epoch=iterNo)
         iterNo = iterNo + 1
 

@@ -13,7 +13,7 @@ class Agent:
         self.Actions = list(np.arange(0, PnumActions, 1, np.int))
         self.p = list(np.ones((PnumActions,)) * (1.0 / PnumActions))
         self.numActions = PnumActions
-        self.epilson = epsilon
+        self.epsilon = epsilon
         self.algorithm = algorithm
         self.incrementalGain = (Parameter.vmax - Parameter.vmin) / (Parameter.numAtoms - 1)
         self.distribution = np.arange(Parameter.vmin, Parameter.vmax + 1, self.incrementalGain, np.float)
@@ -137,7 +137,7 @@ class Agent:
         return K.function([reward, Pro_Dis], [m_prob])
 
     def getAction(self, state):
-        if state is None or random() < self.epilson:
+        if state is None or random() < self.epsilon:
             return self.getRandomAction()
         return self.getGreedyAction(state=state)
 
