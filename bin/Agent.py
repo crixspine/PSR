@@ -44,56 +44,48 @@ class Agent:
                                                           min_samples_leaf=3, n_jobs=30))
 
     def SaveWeight(self, epoch):
+        dir = os.path.abspath(os.getcwd())
         if self.algorithm == "fitted_Q":
             if self.Forest is None:
                 Exception("Forest is not built")
             import pickle
-            # if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-            #     os.makedirs("../observations" + "\\Epoch " + str(epoch))
-            # with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="wb") as f:
-            if not os.path.exists("PSR/observations" + "\\Epoch " + str(epoch)):
-                os.makedirs("PSR/observations" + "\\Epoch " + str(epoch))
-            with open(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="wb") as f:
+            if not os.path.exists(dir + "/observations/Epoch " + str(epoch)):
+                os.makedirs(dir + "/observations/Epoch " + str(epoch))
+            with open(file=dir + "/observations/Epoch " + str(epoch) + "/model.sav", mode="wb") as f:
                 pickle.dump(self.Forest, f)
         elif self.algorithm == "DRL":
             if self.Forests is None:
                 Exception("Forests is not built")
             import pickle
-            # if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-            #     os.makedirs("../observations" + "\\Epoch " + str(epoch))
-            if not os.path.exists("PSR/observations" + "\\Epoch " + str(epoch)):
-                os.makedirs("PSR/observations" + "\\Epoch " + str(epoch))
+            if not os.path.exists(dir + "/observations/Epoch " + str(epoch)):
+                os.makedirs(dir + "/observations/Epoch " + str(epoch))
             for i in range(Parameter.numAtoms):
-                # with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="wb") as f:
-                with open(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="wb") as f:
+                with open(file=dir + "/observations/Epoch " + str(epoch) + "/model" + str(i) + ".sav", mode="wb") as f:
                     pickle.dump(self.Forests[i], f)
 
     def LoadWeight(self, epoch):
+        dir = os.path.abspath(os.getcwd())
         if self.algorithm == "fitted_Q":
             import pickle
-            # if os.path.exists("../observations" + "\\Epoch " + str(epoch) + "\\model.sav"):
-            #     with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="rb") as f:
-            if os.path.exists("PSR/observations" + "\\Epoch " + str(epoch) + "\\model.sav"):
-                with open(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\model.sav", mode="rb") as f:
+            if os.path.exists(dir + "/observations/Epoch " + str(epoch) + "/model.sav"):
+                with open(file=dir + "/observations/Epoch " + str(epoch) + "/model.sav", mode="rb") as f:
                     self.Forest = pickle.load(f)
                     Param = self.Forest.get_params()
                     Param['n_jobs'] = 1
                     self.Forest.set_params(**Param)
             else:
-                Exception("The weight file are not existed!")
+                Exception("The weight file does not exist!")
         elif self.algorithm == "DRL":
             import pickle
             for i in range(Parameter.numAtoms):
-                # if os.path.exists("../observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav"):
-                #     with open(file="../observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="rb") as f:
-                if os.path.exists("PSR/observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav"):
-                    with open(file="PSR/observations" + "\\Epoch " + str(epoch) + "\\model" + str(i) + ".sav", mode="rb") as f:
+                if os.path.exists(dir + "/observations/Epoch " + str(epoch) + "/model" + str(i) + ".sav"):
+                    with open(file=dir + "/observations/Epoch " + str(epoch) + "/model" + str(i) + ".sav", mode="rb") as f:
                         self.Forests[i] = pickle.load(f)
                         Param = self.Forests[i].get_params()
                         Param['n_jobs'] = 1
                         self.Forests[i].set_params(**Param)
                 else:
-                    Exception("The weight file are not existed!")
+                    Exception("The weight file does not exist!")
 
     def getGreedyAction(self, state):
         input = np.transpose(a=state, axes=[1, 0])
@@ -113,10 +105,8 @@ class Agent:
         expectedActions = np.array(expectedActions)
         aid = np.argmax(a=expectedActions, axis=-1)
         return aid
+
     def projection(self):
-        # import os
-        # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-        # os.environ["CUDA_VISIBLE_DEVICES"] = ""
         import keras.backend as K
         import tensorflow as tf
         reward = K.placeholder(shape=(None,), dtype='float64')
@@ -145,39 +135,6 @@ class Agent:
             m_prob = m_prob + tf.scatter_nd(indices=index_m_u, updates=tmp2,
                                             shape=K.cast(x=(K.shape(reward)[0], Parameter.numAtoms), dtype='int64'))
         return K.function([reward, Pro_Dis], [m_prob])
-
-    # def projection(self):
-    #     # import os
-    #     # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-    #     # os.environ["CUDA_VISIBLE_DEVICES"] = ""
-    #     import keras.backend as K
-    #     import tensorflow as tf
-    #     reward = K.placeholder(shape=(None,), dtype='float64')
-    #     Pro_Dis = K.placeholder(shape=(None, Paramter.numAtoms), dtype='float64')
-    #     m_prob = K.zeros(shape=(tf.shape(reward)[0], Paramter.numAtoms), dtype='float64')
-    #     for j in range(Paramter.numAtoms):
-    #         Tz = K.cast(x=K.minimum(x=K.cast(x=Paramter.vmax, dtype="float64"),
-    #                                 y=K.maximum(x=K.cast(x=Paramter.vmin, dtype="float64"),
-    #                                             y=K.cast(x=reward + Paramter.gamma * self.distribution[j],
-    #                                                      dtype="float64"))),
-    #                     dtype='float64')
-    #         bj = (Tz - Paramter.vmin) / self.incrementalGain
-    #         m_l, m_u = tf.math.floor(bj), tf.math.ceil(bj)
-    #
-    #         m_l_id = K.reshape(x=K.cast(x=m_l, dtype='int64'), shape=(-1, 1))
-    #         m_u_id = K.reshape(x=K.cast(x=m_u, dtype='int64'), shape=(-1, 1))
-    #         temp = K.reshape(x=K.arange(0, K.shape(reward)[0], 1, dtype='int64'), shape=(-1, 1))
-    #         index_m_l = K.concatenate([temp, m_l_id], axis=-1)
-    #         index_m_u = K.concatenate([temp, m_u_id], axis=-1)
-    #         cond = K.equal(x=m_u, y=0)
-    #         m_u = K.cast(x=cond, dtype='float64') + m_u
-    #         tmp1 = Pro_Dis[:, j] * (m_u - bj)
-    #         tmp2 = Pro_Dis[:, j] * (bj - m_l)
-    #         m_prob = m_prob + tf.scatter_nd(indices=index_m_l, updates=tmp1,
-    #                                         shape=(K.shape(reward)[0], Paramter.numAtoms))
-    #         m_prob = m_prob + tf.scatter_nd(indices=index_m_u, updates=tmp2,
-    #                                         shape=(K.shape(reward)[0], Paramter.numAtoms))
-    #     return K.function([reward, Pro_Dis], [m_prob])
 
     def getAction(self, state):
         if state is None or random() < self.epilson:
@@ -232,8 +189,6 @@ class Agent:
             initialValue = np.repeat(a=self.initialValue, repeats=len(trainX0), axis=0)
             self.ParallelTrain(trainX=trainX0, labelY=initialValue, pool=pool)
         print("Training:" + str(6 * (epoch * 0.6 + 1)) + "epochs")
-        # env = gym.make("MsPacman-ram-v0")
-        # env = wrappers.Monitor(env, './videos/' + str(epoch) + '/')
         for e in range(min(int(6 * (epoch * 0.6 + 1)), Parameter.maxEpochs)):
             ExpValue1 = []
             for a in self.Actions:
@@ -246,49 +201,13 @@ class Agent:
                 maxValue1 = np.max(a=ExpValue1, axis=-1)
                 labelValue0 = rewardSet + Parameter.gamma * maxValue1
                 self.Forest.fit(trainX0, labelValue0)
-                # state = env.reset()
-                # for action in actionSet:
-                #     env.render()
-                #     observation, reward, done, info = env.step(action.item() + 1)
-                #     if done:
-                #         env.reset()
-                # else:
-                #     env.stats_recorder.save_complete()
-                #     env.stats_recorder.done = True
-                # print("Finish training Iteration: %d, Epoch: %d"%(epoch, e))
-                # print("Saving video in /videos/" + str(epoch) + '/' + str(e) + '/')
-                # print("observation: ", observation)
-                # print("reward: ", reward)
-                # print("done: ", done)
-                # env.close()
-                # state = observation ##saving purposes
             elif self.algorithm == "DRL":
                 ExpDist = np.transpose(a=ExpValue1, axes=[1, 0, 2])
-                # Score = ExpDist * self.distribution
-                # Score = np.sum(a=Score, axis=-1)
-                # indices1 = np.argmax(a=Score, axis=-1)
-                # indices0 = np.arange(0, len(Score), 1, np.int)
-                # maxProbDist = [ExpDist[i, j] for i, j in zip(indices0, indices1)]
-                # maxProbDist = np.array(maxProbDist)
-                # Parallel Code:
                 maxProbDist = self.genNextState([ExpDist])[0]
-                # labelDist = None
-                # batchsize = int(len(rewardSet) / 10)
-                # for i in range(10):
-                #     if i != 9:
-                #         batchreward = rewardSet[i * batchsize:(i + 1) * batchsize:]
-                #         batchProbDist = maxProbDist[i * batchsize:(i + 1) * batchsize:]
-                #     else:
-                #         batchreward = rewardSet[i * batchsize::]
-                #         batchProbDist = maxProbDist[i * batchsize::]
-                #     tmpDist = self.proj_fun([batchreward, batchProbDist])[0]
-                #     if labelDist is None:
-                #         labelDist = tmpDist
-                #     else:
-                #         labelDist = np.concatenate([labelDist, tmpDist], axis=0)
                 labelDist = self.proj_fun([rewardSet, maxProbDist])[0]
                 labelDist = normalization(labelDist)
                 self.ParallelTrain(trainX=trainX0, labelY=labelDist, pool=pool)
+
         print("Finishing Training")
 
     def ParallelTrain(self, trainX, labelY, pool):
@@ -359,28 +278,7 @@ class Agent:
                 self.Forest.fit(trainX0, labelValue0)
             elif self.algorithm == "DRL":
                 ExpDist = np.transpose(a=ExpValue1, axes=[1, 0, 2])
-                # Score = ExpDist * self.distribution
-                # Score = np.sum(a=Score, axis=-1)
-                # indices1 = np.argmax(a=Score, axis=-1)
-                # indices0 = np.arange(0, len(Score), 1, np.int)
-                # maxProbDist = [ExpDist[i, j] for i, j in zip(indices0, indices1)]
-                # maxProbDist = np.array(maxProbDist)
-                # Parallel Code:
                 maxProbDist = self.genNextState([ExpDist])[0]
-                # labelDist = None
-                # batchsize = int(len(rewardSet) / 10)
-                # for i in range(10):
-                #     if i != 9:
-                #         batchreward = rewardSet[i * batchsize:(i + 1) * batchsize:]
-                #         batchProbDist = maxProbDist[i * batchsize:(i + 1) * batchsize:]
-                #     else:
-                #         batchreward = rewardSet[i * batchsize::]
-                #         batchProbDist = maxProbDist[i * batchsize::]
-                #     tmpDist = self.proj_fun([batchreward, batchProbDist])[0]
-                #     if labelDist is None:
-                #         labelDist = tmpDist
-                #     else:
-                #         labelDist = np.concatenate([labelDist, tmpDist], axis=0)
                 labelDist = self.proj_fun([rewardSet, maxProbDist])[0]
                 labelDist = normalization(labelDist)
                 self.ParallelTrain(trainX=trainX0, labelY=labelDist, pool=pool)

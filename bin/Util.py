@@ -94,14 +94,14 @@ def extract(line):
 
 
 def ConvertLastBatchToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
+    dir = os.path.abspath(os.getcwd())
     ret = []
     args = []
     Batch = data.data[data.getBatch()]
     numEpisodePerThread = int(len(Batch) / Parameter.threadPoolSize)
     for i in range(Parameter.threadPoolSize):
         d = Batch[i * numEpisodePerThread:(i + 1) * numEpisodePerThread]
-        # fileName = "../tmp//RawData" + str(i) + ".txt"
-        fileName = "PSR/tmp//RawData" + str(i) + ".txt"
+        fileName = dir + "/tmp/RawData" + str(i) + ".txt"
         writeDataintoDisk(file=fileName, data=d)
         psrModel1 = psrModel.ReturnEmptyObject(name)
         tmpTrainData = data.ReturnEmptyObject()
@@ -115,6 +115,7 @@ def ConvertLastBatchToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
     return ret
 
 def ConvertToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
+    dir = os.path.abspath(os.getcwd())
     numBatch = data.getBatch() + 1
     ret = []
     args = []
@@ -124,8 +125,7 @@ def ConvertToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
     numEpisodePerThread = int(len(Batch) / Parameter.threadPoolSize)
     for i in range(Parameter.threadPoolSize):
         d = Batch[i * numEpisodePerThread:(i + 1) * numEpisodePerThread]
-        # fileName = "../tmp//RawData" + str(i) + ".txt"
-        fileName = "PSR/tmp//RawData" + str(i) + ".txt"
+        fileName = dir + "/tmp/RawData" + str(i) + ".txt"
         writeDataintoDisk(file=fileName, data=d)
         psrModel1 = psrModel.ReturnEmptyObject(name)
         tmpTrainData = data.ReturnEmptyObject()

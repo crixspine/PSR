@@ -9,9 +9,10 @@ import numpy as np
 from bin.MultiProcessSimulation import init
 
 def WriteEvalUateDataForPacMan(EvalData, epoch):
-    if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-        os.makedirs("../observations" + "\\Epoch " + str(epoch))
-    with open(file="../observations" + "\\Epoch " + str(epoch) + "\\summary", mode='w') as f:
+    dir = os.path.abspath(os.getcwd())
+    if not os.path.exists(dir + "/observations/Epoch " + str(epoch)):
+        os.makedirs(dir + "/observations/Epoch " + str(epoch))
+    with open(file=dir + "/observations/Epoch " + str(epoch) + "/summary", mode='w') as f:
         TotalRewards = []
         lenActions = []
         count_wins = 0
@@ -44,10 +45,10 @@ def WriteEvalUateDataForPacMan(EvalData, epoch):
 
 
 def WriteEvalUateData(EvalData, Env, epoch):
-    if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-        os.makedirs("../observations" + "\\Epoch " + str(epoch))
-    with open(file="../observations" + "\\Epoch " + str(epoch) + "\\summary", mode='w') as f:
-        with open(file="../observations" + "\\Epoch " + str(epoch) + "\\trajectory", mode='w') as f1:
+    if not os.path.exists(dir + "/observations/Epoch " + str(epoch)):
+        os.makedirs(dir + "/observations/Epoch " + str(epoch))
+    with open(file=dir + "/observations/Epoch " + str(epoch) + "/summary", mode='w') as f:
+        with open(file=dir + "/observations/Epoch " + str(epoch) + "/trajectory", mode='w') as f1:
             TotalRewards = []
             winTimes = 0
             failTime = 0
@@ -108,12 +109,12 @@ def WriteEvalUateData(EvalData, Env, epoch):
 
 
 def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
+    dir = os.path.abspath(os.getcwd())
     trainData.newDataBatch()
-    # TrainingData.LoadData(TrainData=trainData, file="../observations/RandomSampling.txt", rewardDict=rewardDict)
-    TrainingData.LoadData(TrainData=trainData, file="PSR/observations/RandomSampling.txt", rewardDict=rewardDict)
+    TrainingData.LoadData(TrainData=trainData, file="PSR/RandomSampling.txt", rewardDict=rewardDict)
     for i in range(epoch):
         trainData.newDataBatch()
-        TrainingData.LoadData(TrainData=trainData, file="epilsonGreedySampling" + str(i) + ".txt",
+        TrainingData.LoadData(TrainData=trainData, file="epsilonGreedySampling" + str(i) + ".txt",
                               rewardDict=rewardDict)
 
 import sys
@@ -130,13 +131,14 @@ vars = sys.float_info.min
 
 # def train(model, policy, encoder, epochs):
 def train(epochs):
+    dir = os.path.abspath(os.getcwd())
+    print("Current Working Directory: " + dir)
     manager = Manager()
     rewardDict = manager.dict()
     ns = manager.Namespace()
-    if not os.path.exists("PSR/tmp"):
-        os.makedirs("PSR/tmp")
+    if not os.path.exists(dir + "/tmp"):
+        os.makedirs(dir + "/tmp")
     ns.rewardCount = 0
-    # file = "../train/setting/PacMan.json"
     file = "PSR/train/setting/PacMan.json"
     Parameter.readfile(file=file)
     RandomSamplingForPSR = True
@@ -149,9 +151,7 @@ def train(epochs):
     agent = Agent(PnumActions=game.getNumActions(), epsilon=Parameter.epsilon,
                   inputDim=(Parameter.svdDim,), algorithm=Parameter.algorithm, Parrallel=True)
     print("Learning algorithm/Policy: " + Parameter.algorithm)
-
-    # rdict = readMemoryfromdisk(file="../bin/rewardDict.txt")
-    rdict = readMemoryfromdisk(file="PSR/bin/rewardDict.txt")
+    rdict = readMemoryfromdisk(file="PSR/rewardDict.txt")
     copyRewardDict(rewardDict=rewardDict, rewardDict1=rdict)
     psrModel = CompressedPSR(game.getGameName())
     psrPool = Pool(Parameter.threadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
@@ -172,15 +172,13 @@ def train(epochs):
 
             psrModel.validActObset = trainData.validActOb
             WriteEvalUateDataForPacMan(EvalData=trainData.data[trainData.getBatch()], epoch=-1)
-            # trainData.WriteData(file="../observations" + "\\RandomSampling" + str(iterNo) + ".txt")
-            trainData.WriteData(file="PSR/observations" + "\\RandomSampling" + str(iterNo) + ".txt")
+            trainData.WriteData(file=dir + "/RandomSampling" + str(iterNo) + ".txt")
             RandomSamplingForPSR = False
         if isbuiltPSR:
             psrModel.build(data=trainData, aos=trainData.validActOb, pool=psrPool, rewardDict=rewardDict)
         psrModel.saveModel(epoch=iterNo)
         from bin.Util import writeMemoryintodisk
-        # writerMemoryintodisk(file="../bin/rewardDict.txt", data=rewardDict.copy())
-        writeMemoryintodisk(file="PSR/bin/rewardDict.txt", data=rewardDict.copy())
+        writeMemoryintodisk(file="PSR/rewardDict.txt", data=rewardDict.copy())
         print("Convert sampling data into training forms")
         if trainSet is None:
             trainSet = ConvertToTrainSet(data=trainData, RewardDict=rewardDict,
@@ -203,16 +201,11 @@ def train(epochs):
         tick4 = time.time()
         print("The time spent on Evaluate:" + str(tick4 - tick3))
         trainData.newDataBatch()
-
-        #edit
         game.SimulateTrainData(runs=Parameter.runsForLearning, psrModel=psrModel, trainData=trainData,
                                isRandom=False, epoch=iterNo, pool=psrPool,
                                RunOnVirtualEnvironment=Parameter.trainingOnVirtualEnvironment,
                                name=game.getGameName(), rewardDict=rewardDict, ns=ns)
-
-        # trainData.WriteData(file="../observations/epsilonGreedySampling" + str(iterNo) + ".txt")
         trainData.WriteData(file="PSR/observations/epsilonGreedySampling" + str(iterNo) + ".txt")
-
         WriteEvalUateDataForPacMan(EvalData=EvalData, epoch=iterNo)
         iterNo = iterNo + 1
 

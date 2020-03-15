@@ -11,9 +11,10 @@ import numpy as np
 from bin.MultiProcessSimulation import init
 
 def WriteEvalUateDataForGym(EvalData, epoch):
-    if not os.path.exists("../observations" + "\\Epoch " + str(epoch)):
-        os.makedirs("../observations" + "\\Epoch " + str(epoch))
-    with open(file="../observations" + "\\Epoch " + str(epoch) + "\\summary", mode='w') as f:
+    dir = os.path.abspath(os.getcwd())
+    if not os.path.exists(dir + "/observations/Epoch " + str(epoch)):
+        os.makedirs(dir + "/observations/Epoch " + str(epoch))
+    with open(file=dir + "/observations/Epoch " + str(epoch) + "/summary", mode='w') as f:
         TotalRewards = []
         lenActions = []
         count_wins = 0
@@ -46,11 +47,10 @@ def WriteEvalUateDataForGym(EvalData, epoch):
 
 def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
     trainData.newDataBatch()
-    # TrainingData.LoadData(TrainData=trainData, file="../observations/RandomSampling.txt", rewardDict=rewardDict)
-    TrainingData.LoadData(TrainData=trainData, file="PSR/observations/RandomSampling.txt", rewardDict=rewardDict)
+    TrainingData.LoadData(TrainData=trainData, file="PSR/RandomSampling.txt", rewardDict=rewardDict)
     for i in range(epoch):
         trainData.newDataBatch()
-        TrainingData.LoadData(TrainData=trainData, file="epilsonGreedySampling" + str(i) + ".txt",
+        TrainingData.LoadData(TrainData=trainData, file="epsilonGreedySampling" + str(i) + ".txt",
                               rewardDict=rewardDict)
 
 import time
@@ -62,12 +62,15 @@ from bin.Util import ConvertLastBatchToTrainSet, readMemoryfromdisk, copyRewardD
 # encoder: 'simple' or 'deep'
 # epochs: int
 def train(gameName, epochs, autoencoder):
+    dir = os.path.abspath(os.getcwd())
+    print("Current Working Directory: " + dir)
     #TODO: write all inputs to params file
     manager = Manager()
     rewardDict = manager.dict()
     ns = manager.Namespace()
+    if not os.path.exists(dir + "/tmp"):
+        os.makedirs(dir + "/tmp")
     ns.rewardCount = 0
-    # file = "../train/setting/Gym.json"
     file = "PSR/train/setting/Gym.json"
     Parameter.readfile(file=file)
     # RandomSamplingForPSR = True
@@ -83,8 +86,7 @@ def train(gameName, epochs, autoencoder):
                   inputDim=(Parameter.svdDim,), algorithm=Parameter.algorithm, Parrallel=True)
     print("Learning algorithm/Policy: " + Parameter.algorithm)
 
-    # rdict = readMemoryfromdisk(file="../bin/rewardDict.txt")
-    rdict = readMemoryfromdisk(file="PSR/bin/rewardDict.txt")
+    rdict = readMemoryfromdisk(file="PSR/rewardDict.txt")
     copyRewardDict(rewardDict=rewardDict, rewardDict1=rdict)
     psrModel = CompressedPSR("Gym")
     psrPool = Pool(Parameter.threadPoolSize, initializer=init, initargs=(Parameter.maxTestID, file, Lock(),))
