@@ -1,8 +1,8 @@
-
 global numAtoms, learningRate, decay, vmin, vmax, gamma, alpha, trainingOnVirtualEnvironment, \
     epsilon, algorithm, svdDim, projDim, maxTestID, maxTestlen, maxHistLen, introduceReward, randomInit, \
     lengthOfAction, runsForLearning, runsForCPSR, testingRuns, SimulateBatch, threadPoolSize, lr_min, maxEpochs
 import json
+
 def readfile(file):
     with open(file, 'r') as f:
         Params = json.load(f)
@@ -70,5 +70,10 @@ def writefile(file):
     json.dump(Params, f)
     f.close()
 
-# if __name__ == "__main__":
-#     writefile(file="../train/setting/Maze.json")
+def edit(file, param, newval):
+    with open(file, 'r+') as f:
+        data = json.load(f)
+        data[param] = newval
+        f.seek(0)
+        json.dump(data, f)
+        f.truncate()

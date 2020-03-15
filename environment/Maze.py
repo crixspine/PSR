@@ -3,7 +3,6 @@ import numpy as np
 from numpy.random import choice
 from bin import Parameter
 
-
 class Maze(Simulator):
     NUMActions = 5
     NUMObservations = 6

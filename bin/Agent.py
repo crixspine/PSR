@@ -5,7 +5,6 @@ import os
 from bin.Util import normalization
 from sklearn.ensemble import RandomForestRegressor
 
-
 class Agent:
     def __init__(self, PnumActions, epsilon, inputDim, algorithm, Parrallel):
         self.projectionFunction = None
@@ -161,7 +160,6 @@ class Agent:
     def Train_And_Update(self, data, epoch, pool):
         self.TrainInFit(data=data, epoch=epoch, pool=pool)
 
-    #edit
     def TrainInFit(self, data, epoch, pool):
         data = np.array(data)
         randidx = np.arange(0, len(data), 1, np.int)

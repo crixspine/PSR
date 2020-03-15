@@ -7,8 +7,7 @@ def writeMemoryintodisk(file, data):
     with open(file=file, mode='w') as f:
         s = json.dumps(data)
         f.write(s)
-    print("Finish writing " + file)
-
+    print("Finished writing " + file)
 
 def writeDataintoDisk(file, data):
     with open(file=file, mode='w') as f:
@@ -25,7 +24,6 @@ def writeDataintoDisk(file, data):
                     continue
                 f.write("aid: " + str(a) + ", oid: " + str(o) + ", r: " + str(r))
                 f.write("\n")
-
 
 def readDataintoDisk(file, rewardDict, TrainData):
     with open(file=file, mode='r') as f:
@@ -57,7 +55,7 @@ def readMemoryfromdisk(file):
     with open(file=file, mode='r') as f:
         s = f.readline()
         Mem = json.loads(s)
-    print("Finish reading " + file)
+    print("Finished reading " + file)
     return Mem
 
 def normalization(dist):
@@ -73,14 +71,12 @@ def readaoMatsFromdisk(file):
         aoMats[key] = np.array(aoMats[key])
     return aoMats
 
-
 def computeIntFromBinary(pBinary):
     lResult = 0
     for i in range(len(pBinary)):
         if pBinary[i] == 1:
             lResult += 1 << i
     return lResult
-
 
 def extract(line):
     aid = line.split("aid:")[-1]
@@ -91,7 +87,6 @@ def extract(line):
     r = r.split(", ")[0]
     r = r.split("\n")[0]
     return int(aid), int(oid), float(r)
-
 
 def ConvertLastBatchToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
     dir = os.path.abspath(os.getcwd())
@@ -138,13 +133,11 @@ def ConvertToTrainSet(data, RewardDict, epoch, pool, name, psrModel):
         ret = ret + d
     return ret
 
-
 def group2test(aid, oid, rid):
     ActOb = "a" + str(aid) + "o" + str(oid)
     if Parameter.introduceReward:
         ActOb = ActOb + "r" + str(rid)
     return ActOb
-
 
 def merge(TrainData1, OuputData):
     OuputData.data[OuputData.batch] = OuputData.data[OuputData.batch] + TrainData1.data[TrainData1.batch]

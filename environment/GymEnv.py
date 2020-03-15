@@ -11,7 +11,6 @@ def getNumActions(gameName):
     action_space = str(env.action_space)
     return int(action_space.split('(')[1].split(')')[0])
 
-
 # gameName: gym env, e.g. "MsPacman-ram-v0
 # iterNo: training iteration no.
 # autoencoder: 'simple' or 'deep'

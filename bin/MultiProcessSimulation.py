@@ -9,7 +9,6 @@ from bin import Parameter
 maxRunLength = 100
 np.seterr('raise')
 
-
 def init(mTestID, file, l):
     global maxTestID, lock
     # transformer = GaussianRandomProjection(Paramter.ProjDim)
@@ -17,7 +16,6 @@ def init(mTestID, file, l):
     Parameter.readfile(file=file)
     lock = l
     # default_graph = graph
-
 
 def SimulateRunsOnCPSR(args):
     psrModel = args[0]
@@ -58,7 +56,6 @@ def SimulateRunsOnCPSR(args):
         dataCollector.EndEpisode()
     return dataCollector
 
-
 def checkRewardDict(r, rewardDict, ns):
     if str(r) not in rewardDict.keys():
         lock.acquire()
@@ -66,7 +63,6 @@ def checkRewardDict(r, rewardDict, ns):
             rewardDict[str(r)] = ns.rewardCount
             ns.rewardCount = ns.rewardCount + 1
         lock.release()
-
 
 def SimulateTrainDataMultiProcess(args):
     Env = args[0]
@@ -118,7 +114,6 @@ def SimulateTrainDataMultiProcess(args):
         TrainData.EndEpisode()
     return TrainData
 
-
 def EvaluateMultiProcess(args):
     runs = args[0]
     psrModel = args[1]
@@ -127,7 +122,7 @@ def EvaluateMultiProcess(args):
     epoch = args[4]
     seed(int(args[5]))
     psrModel.loadModel(epoch)
-    print("the seed:" + str(args[5]))
+    print("The seed:" + str(args[5]))
     rewardDict = args[6]
     ns = args[7]
 
@@ -163,7 +158,6 @@ def EvaluateMultiProcess(args):
             count = count + 1
     return RArray
 
-
 def ConvertToTrainSet(args):
     dir = os.path.abspath(os.getcwd())
     psrModel = args[0]
@@ -197,7 +191,6 @@ def ConvertToTrainSet(args):
     writeMemoryintodisk(file=file, data=trainData)
     return file
 
-
 def MultiProcessTrainingForest(args):
     trainSet = args[0]
     labelSet = args[1]
@@ -205,7 +198,6 @@ def MultiProcessTrainingForest(args):
     id = args[3]
     forest.fit(trainSet, labelSet)
     return forest, id
-
 
 def MultiPredict(args):
     inputs = args[0]
@@ -217,8 +209,6 @@ def MultiPredict(args):
     output = tree.predict(inputs)
     return output, id
 
-
-
 def checkTestID(test):
     if test is None:
         return -1
@@ -228,13 +218,11 @@ def checkTestID(test):
         Exception("There is a test that hasn't been seen before!")
         return -1
 
-
 def checkHistID(hist):
     if hist in hists.keys():
         return hists[hist] + 1
     else:
         return 0
-
 
 def ListToString(lists):
     tmp = None
@@ -245,14 +233,12 @@ def ListToString(lists):
             tmp = tmp + t
     return tmp
 
-
 def setTHCountTPSR(tid, hid, THMat, HistMat):
     if tid == -1:
         return THMat, HistMat
     THMat[tid, hid] = THMat[tid, hid] + 1
     HistMat[hid] = HistMat[hid] + 1
     return THMat, HistMat
-
 
 def setTHCount(tid, hid, THMat, HistMat):
     if tid == -1:
@@ -277,7 +263,6 @@ def setTHCount(tid, hid, THMat, HistMat):
     ##############################################################
     return THMat, HistMat
 
-
 def setNullHistoryTHMats(aoSequence, THMat, HistMat):
     if len(aoSequence) > Parameter.maxTestlen:
         return THMat, HistMat
@@ -290,7 +275,6 @@ def setNullHistoryTHMats(aoSequence, THMat, HistMat):
         return setTHCountTPSR(tid=tid, hid=hid, THMat=THMat, HistMat=HistMat)
     else:
         Exception("psrType is unknown!")
-
 
 def ParseAoSequenceTHMats(aoSequence, THMat, HistMat):
     hist = []
@@ -373,8 +357,6 @@ def ConstructingTHMats(args):
     writeMemoryintodisk(file=file, data=aoMats)
     return THMat, HistMat, file
 
-
-
 def setNullHistoryAOMats(aoSequence, aoMats):
     ao = aoSequence[0]
     test = aoSequence[1::]
@@ -389,7 +371,6 @@ def setNullHistoryAOMats(aoSequence, aoMats):
         return IncrementAOMatsTPSR(tid=tid, hid=hid, aos=ao, aoMats=aoMats)
     else:
         Exception("psrType are unknown")
-
 
 def ParseAOSequenceAOMats(aoSequence, aoMats):
     hist = []
@@ -418,13 +399,11 @@ def ParseAOSequenceAOMats(aoSequence, aoMats):
             Exception("psrType is unknown!")
     return aoMats
 
-
 def IncrementAOMatsTPSR(tid, hid, aos, aoMats):
     if tid == -1:
         return aoMats
     aoMats[aos][tid, hid] = aoMats[aos][tid, hid] + 1
     return aoMats
-
 
 def IncrementAOMats(tid, hid, aos, aoMats):
     if tid == -1:
@@ -441,7 +420,6 @@ def IncrementAOMats(tid, hid, aos, aoMats):
     ret = np.matmul(row, col)
     aoMats[aos] = aoMats[aos] + ret
     return aoMats
-
 
 def generateRandomVector(ids, ishistory):
     if ishistory:

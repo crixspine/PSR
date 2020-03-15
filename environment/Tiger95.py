@@ -3,7 +3,6 @@ import numpy as np
 from numpy.random import choice
 from bin import Parameter
 
-
 class Tiger95(Simulator):
     NUMActions = 3
     NUMObservations = 2

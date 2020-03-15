@@ -57,22 +57,29 @@ import time
 from bin.Util import ConvertLastBatchToTrainSet, readMemoryfromdisk, copyRewardDict
 
 # gameName = game from Gym env
-# model: CPSR, TPSR (default = CPSR)
-# policy: fitted-Q, DRL
-# encoder: 'simple' or 'deep'
 # epochs: int
-def train(gameName, epochs, autoencoder):
+# model: CPSR, TPSR (default = CPSR)
+# autoencoder: 'simple' or 'deep'
+# policy: 'fitted-Q' or 'DRL'
+def train(gameName, epochs, autoencoder, policy):
     dir = os.path.abspath(os.getcwd())
     print("Current Working Directory: " + dir)
-    #TODO: write all inputs to params file
+    if not os.path.exists(dir + "/tmp"):
+        os.makedirs(dir + "/tmp")
     manager = Manager()
     rewardDict = manager.dict()
     ns = manager.Namespace()
-    if not os.path.exists(dir + "/tmp"):
-        os.makedirs(dir + "/tmp")
     ns.rewardCount = 0
     file = "PSR/train/setting/Gym.json"
+    if (policy == "fitted_Q"):
+        Parameter.edit(file=file, param="algorithm", newval="fitted_Q")
+    elif (policy == "DRL"):
+        Parameter.edit(file=file, param="algorithm", newval="DRL")
+    else:
+        print("Please check the policy input, fitted_Q or DRL. fitted_Q will be set as default.")
+        Parameter.edit(file=file, param="algorithm", newval="fitted_Q")
     Parameter.readfile(file=file)
+    print("Learning algorithm / Policy: " + Parameter.algorithm)
     # RandomSamplingForPSR = True
     # isbuiltPSR = True
     if (autoencoder == 'simple'):
@@ -84,7 +91,6 @@ def train(gameName, epochs, autoencoder):
     print("No. of iterations to run: " + str(epochs))
     agent = Agent(PnumActions=GymEnv.getNumActions(gameName), epsilon=Parameter.epsilon,
                   inputDim=(Parameter.svdDim,), algorithm=Parameter.algorithm, Parrallel=True)
-    print("Learning algorithm/Policy: " + Parameter.algorithm)
 
     rdict = readMemoryfromdisk(file="PSR/rewardDict.txt")
     copyRewardDict(rewardDict=rewardDict, rewardDict1=rdict)
@@ -136,3 +142,6 @@ def train(gameName, epochs, autoencoder):
         # trainData.WriteData(file="PSR/observations/epsilonGreedySampling" + str(iterNo) + ".txt")
         # WriteEvalUateDataForGym(EvalData=EvalData, epoch=iterNo)
         iterNo = iterNo + 1
+
+if __name__ == "__main__":
+    train(gameName='MsPacman-ram-v0', epochs=10, autoencoder='simple', policy='fitted_Q')

@@ -43,7 +43,6 @@ def WriteEvalUateDataForPacMan(EvalData, epoch):
         else:
             f.write("The wining Probability:" + str(-1))
 
-
 def WriteEvalUateData(EvalData, Env, epoch):
     if not os.path.exists(dir + "/observations/Epoch " + str(epoch)):
         os.makedirs(dir + "/observations/Epoch " + str(epoch))
@@ -107,7 +106,6 @@ def WriteEvalUateData(EvalData, Env, epoch):
                 w = np.mean(a=lenActions, axis=-1)
             f.write("The steps of actions the agent takes before making final decision: " + str(w) + '\n')
 
-
 def loadCheckPoint(trainData, psrModel, epoch, rewardDict):
     dir = os.path.abspath(os.getcwd())
     trainData.newDataBatch()
@@ -125,22 +123,27 @@ from bin.Util import ConvertLastBatchToTrainSet, readMemoryfromdisk, copyRewardD
 vars = sys.float_info.min
 
 # model: CPSR, TPSR (default = CPSR)
-# policy: fitted-Q, DRL
-# encoder: (Default = None)
 # epochs: int
-
-# def train(model, policy, encoder, epochs):
-def train(epochs):
+# policy: fitted-Q, DRL
+def train(epochs, policy):
     dir = os.path.abspath(os.getcwd())
     print("Current Working Directory: " + dir)
+    if not os.path.exists(dir + "/tmp"):
+        os.makedirs(dir + "/tmp")
     manager = Manager()
     rewardDict = manager.dict()
     ns = manager.Namespace()
-    if not os.path.exists(dir + "/tmp"):
-        os.makedirs(dir + "/tmp")
     ns.rewardCount = 0
     file = "PSR/train/setting/PacMan.json"
+    if (policy == "fitted_Q"):
+        Parameter.edit(file=file, param="algorithm", newval="fitted_Q")
+    elif (policy == "DRL"):
+        Parameter.edit(file=file, param="algorithm", newval="DRL")
+    else:
+        print("Please check the policy input, fitted_Q or DRL. fitted_Q will be set as default.")
+        Parameter.edit(file=file, param="algorithm", newval="fitted_Q")
     Parameter.readfile(file=file)
+    print("Learning algorithm / Policy: " + Parameter.algorithm)
     RandomSamplingForPSR = True
     isbuiltPSR = True
     game = PacMan()
@@ -150,7 +153,6 @@ def train(epochs):
     iterNo = 0
     agent = Agent(PnumActions=game.getNumActions(), epsilon=Parameter.epsilon,
                   inputDim=(Parameter.svdDim,), algorithm=Parameter.algorithm, Parrallel=True)
-    print("Learning algorithm/Policy: " + Parameter.algorithm)
     rdict = readMemoryfromdisk(file="PSR/rewardDict.txt")
     copyRewardDict(rewardDict=rewardDict, rewardDict1=rdict)
     psrModel = CompressedPSR(game.getGameName())
@@ -163,13 +165,10 @@ def train(epochs):
         print("Starting Iteration: " + str(iterNo + 1))
         if RandomSamplingForPSR:
             trainData.newDataBatch()
-
-            #edit
             game.SimulateTrainData(runs=Parameter.runsForCPSR, isRandom=True, psrModel=psrModel,
                                    trainData=trainData, epoch=iterNo - 1, pool=psrPool,
                                    RunOnVirtualEnvironment=False, name=game.getGameName(), rewardDict=rewardDict,
                                    ns=ns)
-
             psrModel.validActObset = trainData.validActOb
             WriteEvalUateDataForPacMan(EvalData=trainData.data[trainData.getBatch()], epoch=-1)
             trainData.WriteData(file=dir + "/RandomSampling" + str(iterNo) + ".txt")
@@ -199,7 +198,7 @@ def train(epochs):
         EvalData = game.SimulateTestingRun(runs=Parameter.testingRuns, epoch=iterNo, pool=psrPool,  #edit
                                            psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns) #edit
         tick4 = time.time()
-        print("The time spent on Evaluate: " + str(tick4 - tick3) + "s")
+        print("The time spent on evaluating agent: " + str(tick4 - tick3) + "s")
         trainData.newDataBatch()
         game.SimulateTrainData(runs=Parameter.runsForLearning, psrModel=psrModel, trainData=trainData,
                                isRandom=False, epoch=iterNo, pool=psrPool,
@@ -210,4 +209,4 @@ def train(epochs):
         iterNo = iterNo + 1
 
 if __name__ == "__main__":
-    train(10)
+    train(epochs=10, policy='fitted_Q')

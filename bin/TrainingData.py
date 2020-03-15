@@ -1,6 +1,5 @@
 from bin import Parameter
 
-
 class TrainingData:
     def __init__(self):
         self.batch = -1

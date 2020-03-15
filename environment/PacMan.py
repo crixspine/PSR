@@ -6,7 +6,6 @@ import numpy as np
 MAX_VALUE = 9999999999
 MIN_VALUE = -999999999
 
-
 class PacMan(Simulator):
     INIT_GAME_MAP = [
         ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
@@ -366,4 +365,3 @@ class PacMan(Simulator):
 
     def resetGhost(self, pGhost):
         self.ghostPoses[pGhost] = copy.deepcopy(PacMan.INIT_GHOST_POSES_array[pGhost])
-

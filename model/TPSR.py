@@ -4,11 +4,9 @@ from bin.MultiProcessSimulation import ConstructingTHMats
 from bin import Parameter
 from bin.Util import writeDataintoDisk, readaoMatsFromdisk
 
-
 class TransformedPSR(CompressedPSR):
     def __init__(self, game):
         super().__init__(game=game)
-
 
     def build(self, data, aos, pool, rewardDict):
         self.validActObset = aos

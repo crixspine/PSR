@@ -3,7 +3,6 @@ import numpy as np
 from numpy.random import choice
 from bin import Parameter
 
-
 class StandTiger(Simulator):
     NUMActions = 5
     NUMObservations = 6
