@@ -240,11 +240,11 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.GymEnv" />
+      <item itemvalue="Python.MazeTigerTrain" />
       <item itemvalue="Python.PSR" />
       <item itemvalue="Python.PacManTrain" />
       <item itemvalue="Python.test" />
-      <item itemvalue="Python.GymEnv" />
-      <item itemvalue="Python.MazeTigerTrain" />
     </list>
     <recent_temporary>
       <list>
