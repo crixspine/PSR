@@ -195,8 +195,8 @@ def train(epochs, policy):
         agent.SaveWeight(epoch=iterNo)
         print("Evaluating the agent")
         tick3 = time.time()
-        EvalData = game.SimulateTestingRun(runs=Parameter.testingRuns, epoch=iterNo, pool=psrPool,  #edit
-                                           psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns) #edit
+        EvalData = game.SimulateTestingRun(runs=Parameter.testingRuns, epoch=iterNo, pool=psrPool,
+                                           psrModel=psrModel, name=game.getGameName(), rewardDict=rewardDict, ns=ns)
         tick4 = time.time()
         print("The time spent on evaluating agent: " + str(tick4 - tick3) + "s")
         trainData.newDataBatch()

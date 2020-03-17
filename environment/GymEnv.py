@@ -1,5 +1,9 @@
 import gym
 from autoencoder import DeepAutoEnc, SimpleAutoEnc
+from bin import Parameter
+from bin.Util import merge
+from numpy.random import randint
+from bin.MultiProcessSimulation import EvaluateMultiProcess, SimulateTrainDataMultiProcess, SimulateRunsOnCPSR
 
 def getNumObservations(gameName):
     env = gym.make(gameName)
@@ -10,6 +14,38 @@ def getNumActions(gameName):
     env = gym.make(gameName)
     action_space = str(env.action_space)
     return int(action_space.split('(')[1].split(')')[0])
+
+def SimulateTestingRun(self, runs, epoch, pool, psrModel, name, rewardDict, ns):
+    args = []
+    for i in range(Parameter.threadPoolSize):
+        args.append([int(runs / Parameter.threadPoolSize), psrModel.ReturnEmptyObject(name=name), self.getNumActions(),
+                     self.Clone(), epoch, randint(low=0, high=1000000000), rewardDict, ns])
+    EvalDatas = pool.map(func=EvaluateMultiProcess, iterable=args)
+    output = []
+    for data in EvalDatas:
+        output = output + data
+    return output
+
+def SimulateTrainData(self, runs, isRandom, psrModel, trainData, epoch, pool, RunOnVirtualEnvironment, name, rewardDict, ns):
+    if not RunOnVirtualEnvironment:
+        print("Simulating an agent on Real environment!")
+        args = []
+        for i in range(Parameter.threadPoolSize):
+            args.append(
+                [self.Clone(), psrModel.ReturnEmptyObject(name=name), int(runs / Parameter.threadPoolSize), isRandom,
+                 self.getNumActions(), epoch, randint(low=0, high=1000000000), rewardDict, ns])
+        TrainDataList = pool.map(func=SimulateTrainDataMultiProcess, iterable=args)
+    else:
+        print("Simulating an agent on CPSR environment!")
+        args = []
+        for i in range(Parameter.threadPoolSize):
+            args.append(
+                [psrModel.ReturnEmptyObject(name=name), int(runs / Parameter.threadPoolSize), self.getNumActions(),
+                 epoch, randint(low=0, high=1000000000), rewardDict, ns])
+        TrainDataList = pool.map(func=SimulateRunsOnCPSR, iterable=args)
+    for TrainData in TrainDataList:
+        trainData = merge(TrainData1=TrainData, OuputData=trainData)
+    return trainData
 
 # gameName: gym env, e.g. "MsPacman-ram-v0
 # iterNo: training iteration no.
@@ -23,6 +59,8 @@ def trainInEnv(gameName, iterNo, autoencoder):
     observation = env.reset()
     done = False
     obs_epoch = []
+    actions_epoch = []
+    rewards_epoch = []
     while not done:
         env.render()
         action = env.action_space.sample()
@@ -31,10 +69,17 @@ def trainInEnv(gameName, iterNo, autoencoder):
         for val in observation:
             obs_step.append(val)
         obs_epoch.append(obs_step)
+        actions_epoch.append(action)
+        rewards_epoch.append(reward)
         if done:
             print("Finished training iteration " + str(iterNo+1))
             print("Observations from Gym for iteration " + str(iterNo+1) + ":")
+            print("Observations for epoch " + str(iterNo) + ":")
             print(obs_epoch)
+            print("Actions for epoch " + str(iterNo) + ":")
+            print(actions_epoch)
+            print("Rewards for epoch " + str(iterNo) + ":")
+            print(rewards_epoch)
             if (autoencoder == 'simple'):
                 if (iterNo == 0):
                     # train model only on the first epoch
@@ -49,10 +94,11 @@ def trainInEnv(gameName, iterNo, autoencoder):
                 else:
                     # load trained model from first epoch
                     encoded_obs = DeepAutoEnc.encodeFromModel(obs_epoch)
-            # save encoded observations as integers in order to save as scalable PSR models
-            # this incurs an additional loss of information after encoding (which already causes loss of information!)
-            # might not need to convert if saving in small dimensions (code size in autoencoder as 1-3)
-            # encoded_obs_int = encoded_obs.astype(int)
-            # print(encoded_obs_int)
+            # save encoded observations as integers
+            # this is needed as the encoded states are stored as the observation id in the dict
+            # maintain the encoder precision by multiplying by a factor before converting to int
+            encoded_obs_int = (encoded_obs * 100000).astype(int)
+            print("Encoded observations for epoch " + str(iterNo) + ":")
+            print(encoded_obs_int)
     env.close()
-    return encoded_obs
+    return actions_epoch, encoded_obs_int, rewards_epoch
