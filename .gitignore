@@ -1,3 +1,9 @@
 .idea
 /train/.idea
 /train/observations
+__pycache__
+/autoencoder/__pycache__
+/bin/__pycache__
+/environment/__pycache__
+/model/__pycache__
+/train/__pycache__
