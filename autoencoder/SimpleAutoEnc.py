@@ -15,7 +15,7 @@ def encodeFromModel(observation):
     print("Loading Encoder...")
     input = [observation]
     if os.path.exists(dir + "/AutoEncModel"):
-        model = load_model(dir + '/AutoEncModel/EncoderNetwork')
+        model = load_model(dir + '/AutoEncModel/EncoderNetwork', compile=False)
     else:
         Exception("AutoEncoder model not found!")
     return model.predict(input)
